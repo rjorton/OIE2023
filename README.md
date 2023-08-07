@@ -1,8 +1,8 @@
-# [Viral Genomics and Bioinformatics Asia 2022 course](https://coursesandconferences.wellcomeconnectingscience.org/event/viral-genomics-and-bioinformatics-asia-20220822/)
-* Monday 22nd - Friday 26th August 2022  
-* [Wellcome Connecting Science](https://www.wellcomeconnectingscience.org) and [COG-Train](https://www.cogconsortium.uk/priority-areas/training/about-cog-train/)  
-* [Course website](https://coursesandconferences.wellcomeconnectingscience.org/event/viral-genomics-and-bioinformatics-asia-20220822/)  
-* [Course GitHub repository](https://github.com/WCSCourses/ViralBioinfAsia2022)
+# Reference Alignment Practical
+## [6th Viral Bioinformatics and Genomics Training Course](https://github.com/centre-for-virus-research/CVR-VBG-2023)
+* Monday 21st - Friday 25th August 2023
+* Glasgow, UK
+* [Medical Research Council - University of Glasgow Centre for Virus Research](https://www.gla.ac.uk/research/az/cvr/)
 
 ## Contact
 
@@ -14,239 +14,517 @@ G61 1QH
 UK  
 E-mail: Richard.Orton@glasgow.ac.uk  
 
-
 ## Contents
 
-* [1: SARS-CoV-2 Reference Alignment](#1-sars-cov-2-reference-alignment)
-	+ [1.1: MinION Tutorial](#11-minion-tutorial)
-		+ [1.1.1: Setup and Data](#111-setup-and-data)
-		+ [1.1.2: ARTIC consensus sequence generation walkthrough](#112-artic-consensus-sequence-generation-walkthrough)
-		+ [1.1.3: Exercise: Generating ARTIC consensus sequences yourself](#113-exercise-generating-artic-consensus-sequences-yourself)
-		+ [1.1.4: Additional Resources](#114-additional-resources)
-	+ [1.2: Illumina Tutorial](#12-illumina-tutorial)
-		+ [1.2.1: Setup and data](#121-setup-and-data)
-		+ [1.2.2: Illumina consensus generation walkthrough](#122-illumina-consensus-generation-walkthrough)
-		+ [1.2.3: Exercise: Generating Illumina consensus sequences yourself](#123-exercise-generating-illumina-consensus-sequences-yourself)
-* [2: SARS-CoV-2 Lineages and Mutations](#2-sars-cov-2-lineages-and-mutations)
-	+ [2.1: Pangolin lineages](#21-pangolin-lineages)
-	+ [2.2: SPEAR Mutations](#22-spear-mutations)
-* [3: SARS-CoV-2 Phylogenetics](#3-sars-cov-2-phylogenetics)
-	+ [3.1: USHER](#31-usher)
-	+ [3.2: CIVET](#32-civet)
-* [4: SARS-CoV-2 Group Practical](#4-sars-cov-2-group-practical)
-* [5: Warnings](#5-warnings)
+This practical is associated with a lecture on Reference Alignment of High-Throughoput Sequencing (HTS) reads to a reference a sequence.
 
-## 1: SARS-CoV-2 Reference Alignment
+* [0: Overview](#0-overview)
+* [1: Setup](#1-setup)
+	+ [1.1: Basic read statistics](#11-basic-read-statistics)
+* [2: Read Alignment](#2-read-alignment)
+	+ [2.1: Indexing the reference sequence](#21-indexing-the-reference-sequence)
+	+ [2.2: Aligning the reads to the reference](#22-aligning-the-reads-to-the-reference)
+	+ [2.3: Converting SAM to BAM](#23-converting-SAM-to-BAM)
+	+ [2.4: Basic alignment statistics](#24-basic-alignment-statistics)
+* [3: Alignment on your own](#3-alignment-on-your-own)
+* [4: Extra data](#4-extra-data)
+* [5: Assembly Visualisation and Statistics Practical](#5-assembly-visualisation-and-statistics-practical)
+	+ [5.1: Setup](#51-setup)
+	+ [5.2: Summary Statistics with weeSAM](#52-summary-statistics-with-weeSAM)
+	+ [5.3: Coverage plot on your own](#53-coverage-plot-on-your-own)
+	+ [5.4: Visualisation with Tablet](#54-visualisation-with-tablet)
+ 
+ 
+# 0: Overview
 
-In this module we will be performing reference alignment of SARS-CoV-2 (Severe acute respiratory syndrome coronavirus 2) samples to create consensus sequences for a number of samples. This will be done for both MinION and Illumina data sets using a different approach for each technology.
+**YOU DO NOT NEED TO ENTER THE COMMANDS IN THIS OVERVIEW SECTION!**
 
-By this point in the course (day 5) you should be comfortable working with the terminal command line on the course Ubuntu linux virtual machine: navigating through folders using ```cd```, list folder contents using ```ls```, making directories using ```mkdir```, deleting files using ```rm```, entering bioinformatics commands, and using **TAB Completion** which makes entering long filenames and paths easy.
-
-Previously in the course you would of learnt about the FASTQ format, what SAM and BAM files, and been aligning primarily illumina reads to reference sequences to call a consensus sequence. This session will build upon this, tweaking the steps to adapt them for handling the large number of overlapping amplicons used in the ARTIC SARS-CoV-2 protocols, and using a consensus caller specifically designed for viral samples.
-
-Commands that you need to enter into the terminal are presented in this tutorial in grey code boxes like this:
-
-```
-cd  dont_enter_this_command_its_just_an_example
-```
-**NB:** commands are presented within code blocks - some are long and stretch off the page within a scrollpane.
-
-## 1.1: MinION Tutorial
-This MinION tutorial is largely based on the [ARTIC](https://artic.network) network's [nCoV-2019 bioinformatics protocol](https://artic.network/ncov-2019/ncov2019-bioinformatics-sop.html) which we will use to create consensus genome sequences for a number of MinION SARS-CoV-2 samples. 
-
-### 1.1.1: Setup and Data
-
-The 'artic-ncov2019' [Conda](https://docs.conda.io/en/latest/) environment has already been installed on the [VirtualBox](https://www.virtualbox.org) Ubuntu virtual machine (VM) that you are using for this course, but we need to 'activate' the artic-ncov2019 Conda environment each time we want to use the ARTIC pipeline:
-
-```
-conda activate artic-ncov2019
-```
-
-Next, lets change directory (```cd```) into the folder where the example MinION data is located for this practical:
-
-```
-cd ~/SARS-CoV-2/MinION/20201229_1542_X1_FAO14190_c9e59aa7_Batch124A/
-
-```
-
-**NB:** Using **TAB completion** makes navigating into long folder names easy!!
-
-This run was performed on an [Oxford Nanopore Technologies](https://nanoporetech.com) (ONT) GridION machine, the run was started on 29th December 2020 at 15:42 (20201229_1542), using the first (X1) of the five flow cells slots on the GridION, the flowcell ID number was FAO14190, and the run was named 'Batch124A' locally within the [Medical Research Council-University of Glasgow Centre for Virus Research](https://www.gla.ac.uk/research/az/cvr/) (CVR) as part of a Covid-19 Genomics UK Consortium ([COG-UK](https://www.cogconsortium.uk)) sequencing run. The samples were sequenced used Version 2 (V2) of the ARTIC [nCoV-2019](https://github.com/artic-network/primer-schemes/tree/master/nCoV-2019) amplicon primers.
-
-The run was live basecalled and demultiplexed using the ONT basecaller Guppy (this is available for download from the [ONT website](https://nanoporetech.com) after registration with ONT), making use of the GridION's onboard Graphical Processing Unit (GPU). If you list the contents of this directory you should see a number of files and folders:
+In this practical, we will be aligning paired end reads to a reference sequence. Commands that you need to enter into the Terminal window (i.e. the command line) are presented in a box and with a different font, like this:
 
 ```
 ls
 ```
 
-The key files and folders in this run folder are (amongst others):
-
-* **fast5\_pass** - this folder contains all the raw FAST5 reads that PASSED the basic quality control filters of the guppy basecaller. 
-* **fast5\_fail** - this folder contains all the raw FAST5 reads that FAILED the basic quality control filters of the guppy basecaller
-* **fastq\_pass** - this folder contains all the FASTQ reads that were converted from the those within the fast5\_pass fiolder
-* **fastq_fail**- this folder contains all the FASTQ reads that were converted from the those within the fast5\_fail fiolder
-* **sequencing\_summary\_FAO14190\_ad60b376.txt** - this sequencing_summary file is produced by the basecaller and contains a summary of each read such as it's name, length, barcode and what FAST5 and FASTQ files it is located in.
-
-**NB:** To save disk space on the VM, the fast5\_fail and fastq\_fail folders do not contain any read data, as failed reads are not used in the pipeline.
-
-As the data has already been demultiplexed, there is one folder for each barcode detected on the run:
+Sometimes a command is long and doesn’t fit on a single line on the screen (and screen sizes vary), but it should still be entered as one single line on the computer terminal. 
 
 ```
-ls fastq_pass
+bwa mem -t 14 my_reference_file.fasta my_read_file_1.fastq my_read_file_2.fastq > my_output_file.sam
 ```
 
-You should see the following barcode folders (06, 07 and 12) representing the 3 samples on the run that we will be analysing:
+A few Linux tips to remember:
 
-* **barcode06**
-* **barcode07**
-* **barcode12**
-* **unclassified**
-
-**NB**: unclassified is where reads whose barcode could not be determined are placed - to save disk space on the VM there are no reads in the unclassified folders, but they typically contain substantial amounts of reads.
-
-Typically the FASTQ data for each sample is stored in multiple files of around 4000 reads each. For barcode06, you should see 25 different FASTQ files, numerically labelled at the end of their filename from 0 to 24:
+1.	Use the **Tab button** to automatically complete filenames – especially long ones
+2.	Use the **Up Arrow** to scroll through your previous commands, it enables you to easily re-run or re-use/change/correct old commands
+3.	**Case matters**, the following file names are all different:
 
 ```
-ls fastq_pass/barcode06
+Myfile.txt
+MyFile.txt
+MYFILE.txt
+myfile.txt
+my file.txt
+my_file.txt
 ```
 
-
-### 1.1.2: ARTIC consensus sequence generation walkthrough
-
-The first sample we will be working with is barcode06. The ARTIC bioinformatics protocol has two distinct steps:
-
-1. **artic guppyplex** - combines all a samples FASTQ reads into a single file and size filters them (it can also perform a quality score check, which is not needed here as the reads are already split into pass and fail folders based on quality by guppy)
-2. **artic minion** - aligns the reads to the [Wuhan-Hu-1](https://www.ncbi.nlm.nih.gov/nuccore/MN908947) reference sequence, trims the amplicon primer sequences from the aligned reads, downsamples amplicons to reduce the data, and creates a consensus sequence utilising [nanopolish](https://github.com/jts/nanopolish) for variant calling to correct for common MinION errors (such as those associated with homopolymer regions).
-
-First we will create a folder to work in and store our output files:
+Also watch out for number 1s being confused with lowercase letter L’s, and capital O’s being confused with zeroes
 
 ```
-mkdir ~/SARS-CoV-2/MinION_Results
+l = lower case letter L
+1 = number one
+O = capital letter O
+0 = zero
 ```
 
-Then we will move into the folder to work:
+# 1: Setup
+
+**Make sure you are logged into the alpha2 server with MobaXterm.**
+
+In this session, we will be using a set of Illumina paired end reads which were simulated from a hepatitis c virus (HCV) genome; these simulated reads were created using ART (Huang et al., 2012: [10.1093/bioinformatics/btr708](10.1093/bioinformatics/btr708)). The goal now is to align these reads to a reference genome sequence, with an ultimate goal of creating a consensus sequence for mutation anlysis.
+
+To start off, you will need to copy the data we need for the practical to your home directory. First change directory (cd) to your home directory
 
 ```
-cd ~/SARS-CoV-2/MinION_Results
+cd
 ```
 
-**artic guppyplex** - now we will run artic guppyplex on sample barcode06:
+Then copy (cp) the data folder (-r for recursive - we want the folder and all it's contents) to your current directory (which will be your home directory after the above command was entered):
 
 ```
-artic guppyplex --skip-quality-check --min-length 400 --max-length 700 --directory ~/SARS-CoV-2/MinION/20201229_1542_X1_FAO14190_c9e59aa7_Batch124A/fastq_pass/barcode06 --prefix cvr124a
+cp -r /home4/VBG_data/Richard .
 ```
 
-Breaking this command down:
+Then change directory to the HCV data folder
 
-* **artic gupplyplex** = the name of the program/module to use (installed as part of conda environment)
-* **--skip-quality-check** = don't filter reads based on quality (our reads are already filtered)
-* **--min-length 400** = minimum read length to accept is 400 bases
-* **--max-length 700** = maximum read length to accept is 700 bases
-* **--directory** = PATH to input directory containing FASTQ reads to process
-* **--prefix** = output name prefix to label output file (I choose cvr124a to signify batch 124a from the CVR)
+```
+cd ~/Richard/HCV/
+```
 
-This should create an output FASTQ file called **cvr124a_barcode06.fastq**:
+Next, list the contents of the directory so you can see the files we will be working with:
 
 ```
 ls
 ```
 
-**artic minion** - next we will run artic minion using the FASTQ file created above:
+You should see the FASTQ paired end read files:
 
+**hcv\_sim\_R1.fq**  
+**hcv\_sim\_R2.fq**
 
-```
-artic minion --normalise 200 --threads 4 --scheme-directory ~/artic-ncov2019/primer_schemes --read-file cvr124a_barcode06.fastq --fast5-directory ~/SARS-CoV-2/MinION/20201229_1542_X1_FAO14190_c9e59aa7_Batch124A/fast5_pass/barcode06 --sequencing-summary ~/SARS-CoV-2/MinION/20201229_1542_X1_FAO14190_c9e59aa7_Batch124A/sequencing_summary_FAO14190_ad60b376.txt nCoV-2019/V2 barcode06
-```
+And also two FASTA reference sequence files:
 
-Breaking this command down:
+**1b\_hcv\_ref.fasta**  
+**1a\_hcv\_ref.fasta**
 
-* **artic minion** = the name of the program/module to use (installed as part of conda environment)
-* **--normalise 200** = normalise (downsample) each amplicon so there are only 200 reads in each direction (forward and reverse) - this enables the nanopolish variant and consensus calling to complete relatively quickly
-* **--threads 4** = the number of computer threads to use (depends on how powerful your machine is, the more the better)
-* **--scheme-directory** = path to the artic primer scheme directory (installed on the VM as part of the conda environment)
-* **--read-file** = the name of the input FASTQ file to align
-* **--fast5-directory** = the path to the corresponding FAST5 folder of the reads
-* **--sequencing-summary** = the path to the sequencing_summary.txt file of the run 
-* **nCoV-2019/V2** = the primer scheme to use for amplicon primer trimming - this folder is located in the scheme\_directory so on this VM this corresponds to the folder ~/artic-ncov2019/primer_schemes/nCoV-2019/V2
-* **barcode06** = the output prefix name to label output files, this can be anything you want such as the sample name or barcode number or anything you want
+We will be aligning the paired end reads to the two reference sequences in turn. The reference sequences represent the 1a and 1b subtypes of HCV, and we will use the alignment results to determine which subtype the sample contains, and to also highlight the importance of selecting an appropriate reference.
+ 
+## 1.1: Basic read statistics
 
-Overall, this artic minion command uses the aligner [minimap2](https://github.com/lh3/minimap2) to align the reads to the [Wuhan-Hu-1](https://www.ncbi.nlm.nih.gov/nuccore/MN908947) reference sequence, [samtools](http://www.htslib.org) to convert and sort the SAM file into BAM format, custom [artic](https://github.com/artic-network/fieldbioinformatics) scripts for amplicon primer trimming and normalisation (downsampling), [nanopolish](https://github.com/jts/nanopolish) for variant calling, and custom [artic](https://github.com/artic-network/fieldbioinformatics) scripts for creating the consensus sequence using the reference and VCF files, and then masking low coverage regions with Ns. This will create the following key files (amongst many others), all starting with the prefix **barcode06** in this instance:
-
-* **barcode06.sorted.bam** - BAM file containing all the reads aligned to the reference sequence (there is no amplicon primer trimming in this file)
-* **barcode06.trimmed.rg.sorted.bam** - BAM file containing normalised (downsampled) reads with amplicon primers left on - this is the file used for variant calling
-* **barcode06.primertrimmed.rg.sorted.bam** - BAM file containing normalised (downsampled) reads with amplicon primers trimmed off
-* **barcode06.pass.vcf.gz** - detected variants that PASSed the filters in VCF format (gzipped)
-* **barcode06.fail.vcf** - detected variants that FAILed the filters in VCF format
-* **barcode06.consensus.fasta** - the consensus sequence of the sample
-
-**NB:** this command will give a warning message at the end, this can be ignored as we don't need the muscle alignment file. The warning is due to an updated version of muscle within the artic environment that expects the command structured -align and -output rather than -in and -out (also reported as a GitHub issue [here](https://github.com/artic-network/artic-ncov2019/issues/93)):
+We will first use a tool called prinseq to count the number of reads in each file. As these are paired end reads, there should be one read from each read pair in each file – and hence the same number of reads in each file. We will also use prinseq to output statistics on the read lengths, but prinseq itself can do much much more.
 
 ```
-#DO NOT ENTER THIS - IT IS A RECORD OF THE ERROR MESSAGE
-Command failed:muscle -in barcode06.muscle.in.fasta -out barcode06.muscle.out.fasta
+prinseq-lite.pl -stats_info -stats_len -fastq hcv_sim_R1.fq -fastq2 hcv_sim_R2.fq
 ```
 
-We can count the number of reads that have mapped to the reference sequence (discounting supplementary and additional alignments which are multi-mappings) using samtools view with the -c argument to count reads, and by utilising [SAM Flags](https://samtools.github.io/hts-specs/SAMv1.pdf) to only count read alignments that are mapped (F4), that are primary alignments (F256), and are not supplementary alignments (F2048): F4 + F256 + F2048 = F2308:
+***Command breakdown:***
+
+1.	**prinseq-lite.pl** is the name of the program
+2.	**-stats\_info** tells prinseq to output basic stats on the reads (number of reads and bases)
+3.	**-stats\_len** tells prinseq to output basic stats on read lengths (min, max, mean etc)
+4.	**-fastq hcv\_sim\_R1.fq** the name of the 1st FASTQ file
+5.	**-fastq2 hcv\_sim\_R2.fq** the name of the 2nd FASTQ file in the pair
+
+### Common Issue
+* A common issue here is not entering the prinseq command on one line in the terminal - you should only use the enter key at the end of the command to execute it.
+* Another common issue is typos - check the command carefully if you get an error - it is likely you have mispelled a file or argument
+
+***
+### Questions
+**Question 1** – How many reads and bases are in the read files 1 and 2?
+
+**Question 2** – What is the average (mean) length of the reads? 
+***
+
+The statistics are split into those for the first FASTQ file of the read pair (e.g. stats\_info, stats\_len, etc) and those for the second FASTQ file of the read pair (e.g. stats\_info2, stats\_len2, etc), and should look a bit like this:
 
 ```
-samtools view -c -F2308 barcode06.sorted.bam
+stats_info	bases		48000000
+stats_info	reads		320000
+stats_info2	bases		48000000
+stats_info2	reads		320000
+stats_len	max		150
+stats_len	mean		150.00
+stats_len	median		150
+stats_len	min		150
+stats_len	mode		150
+stats_len	modeval		320000
+stats_len	range		1
+stats_len	stddev		0.00
+stats_len2	max		150
+stats_len2	mean		150.00
+stats_len2	median		150
+stats_len2	min		150
+stats_len2	mode		150
+stats_len2	modeval		320000
+stats_len2	range		1
+stats_len2	stddev		0.00 
 ```
 
-**NB:** Alternatively, you could use the command ```samtools flagstats barcode06.sorted.bam``` which you learnt previously.
+Paired read files should always have the same number of lines/reads (the ordering of the reads in each file is also critical), so if your two paired files have a different number of reads, something has gone wrong (e.g. filtering/trimming went wrong and corrupted the output, or maybe files from different samples are being used). 
+ 
+# 2: Read Alignment
 
-If you compare the mapped read count to that from the normalised (downsampled) BAM file, you should see less mapped reads due to the normalisation step:
+There are many tools available to align reads onto a reference sequence: bwa, bowtie2, minimap2, bbMap, to name but a few.
 
-```
-samtools view -c -F2308 barcode06.trimmed.rg.sorted.bam
-```
+We will be using [BWA](http://bio-bwa.sourceforge.net) to align our paired end reads to a reference sequence and output a [SAM (Sequence Alignment Map)](https://samtools.github.io/hts-specs/SAMv1.pdf) file. The SAM file contains the result of each read’s alignment to the given reference sequence. 
 
-We can view the FASTA consensus sequence via the command line (we will be analysing consensus sequences in more depth in later sessions to see what mutations they contain etc):
+## 2.1: Indexing the reference sequence
 
-```
-more barcode06.consensus.fasta
-```
-
-### 1.1.3: Exercise: Generating ARTIC consensus sequences yourself
-
-Your task now is to adapt the above artic guppyplex and minion commands to run on samples barcode07 and/or barcode12.
-
-A reminder of the two commands used for barcode06 is:
-
+First, we need to create a BWA index of the reference sequence. Tools such as BWA need to index the sequence first to create a fast lookup (or index) of short sequence seeds within the reference sequence. This enables the tools to rapidly align millions of reads:
 
 ```
-artic guppyplex --skip-quality-check --min-length 400 --max-length 700 --directory ~/SARS-CoV-2/MinION/20201229_1542_X1_FAO14190_c9e59aa7_Batch124A/fastq_pass/barcode06 --prefix cvr124a
+bwa index 1b_hcv_ref.fasta
+```
+
+If you list (ls) the contents of the directory, you should see the BWA index files, they will all have the prefix 1b\_hcv\_ref.fasta, and will have extensions such as **.amb**, **.ann**, **.bwt**, **.pac**, and **.sa**.
+
+```
+ls
+```
+
+## 2.2: Aligning the reads to the reference
+
+Next, we want to align our reads to the reference sequence using the BWA mem algorithm:
+
+```
+bwa mem -t 4 1b_hcv_ref.fasta hcv_sim_R1.fq hcv_sim_R2.fq > 1b.sam
+```
+
+***Command breakdown:***
+
+1. **bwa** = the name of the program we are executing
+2. **mem** = the BWA algorithm to use (recommended for illumina reads > 70nt)
+3. **-t 4** = use 4 computer threads
+4. **1b\_hcv\_ref.fasta** = the name (and location) of the reference genome to align to
+5. **hcv\_sim\_R1.fq** = the name of read file 1
+6. **hcv\_sim\_R2.fq** = the name of read file 2
+7. **>** = direct the output into a file
+8. **1b.sam** = the name of the output SAM file to create 
+
+Overall, this command will create an output file called 1b.sam in the current directory, which contains the results (in SAM format) of aligning all our reads to the reference sequence 1b\_hcv\_ref.fasta.
+
+When bwa has finished (and your prompt comes back), check that the SAM file has been created.
+
+```
+ls
+```
+
+There should now be a file called **1b.sam** in the directory.
+
+### Common issue
+A common mistake is not waiting for your previous command to finish, and entering the next command into the terminal before the prompt has returned. You need to wait until the **manager@GCV2023** command prompt returns before entering the next command - the bwa alignment can sometimes take a few minutes.
+
+## 2.3: Converting SAM to BAM
+
+Typically, a SAM file contains a single line for each read in the data set, and this line stores the alignment result of each read (reference name, alignment location, CIGAR string, the read sequence itself, quality, etc).
+
+SAM files are in a text format (which you can open and view if you like: head 1b.sam), but can take up a lot of disk storage space. It is good practice to convert your SAM files to BAM (Binary Alignment Map) files, which are compressed binary versions of the same data, and can be sorted and indexed easily to make searches faster. We will use [samtools](https://samtools.github.io) to convert our SAM to BAM, and sort and index the BAM file:
+
+```
+samtools sort 1b.sam -o 1b.bam
 ```
 
 ```
-artic minion --normalise 200 --threads 4 --scheme-directory ~/artic-ncov2019/primer_schemes --read-file cvr124a_barcode06.fastq --fast5-directory ~/SARS-CoV-2/MinION/20201229_1542_X1_FAO14190_c9e59aa7_Batch124A/fast5_pass/barcode06 --sequencing-summary ~/SARS-CoV-2/MinION/20201229_1542_X1_FAO14190_c9e59aa7_Batch124A/sequencing_summary_FAO14190_ad60b376.txt nCoV-2019/V2 barcode06
+samtools index 1b.bam
 ```
 
-Essentially all you will need to do is change every occurrence of **barcode06** (once in guppyplex and three times in minion) to either **barcode07** or **barcode12**. 
+***Command breakdown:***
 
-**QUESTION** - what is number of mapped reads in each of the samples you have looked at?
-
-As the commands are well structured and all that is needed to change is the input and output names within a run, it means that these commands are easily scriptable using bash (which you have learnt earlier on in this course) or pipeline tools such as [snakemake](https://snakemake.github.io) and [nextflow](https://www.nextflow.io).
-
-At the end of this session we should deactivate our conda environment:
-
-```
-conda deactivate
-```
-
-### 1.1.4: Additional Resources
+1.	The first command tells samtools to **sort** the SAM file, and to also output (**-o**)the sorted data in BAM format to a file called **1b.bam**
+2.	We then use samtools to **index** the BAM file 1b.bam (indexing [which relies on sorted data] enables faster searches downstream).
 
 
-We were initially planning on using the [ncov2019-artic-nf](https://github.com/connor-lab/ncov2019-artic-nf) nextflow pipeline for running the ARTIC network tools as it offers a number of extra functions and easier automation. However, we could not get it working on the VM correctly (DSL error resolved by replacing nextflow.preview.dsl = 2 with nextflow.enable.dsl = 2 within the scripts, but the following error could not be resolved by dropping down Nextflow versions (GitHub issue to be created):
+There should now be two new files in the directory called: 
+
+**1b.bam** (the BAM file)  
+**1b.bam.bai** (the BAM index file) 
+
+Now let’s list (ls) the contents of the directory to check we have our new files, and also check out their sizes:
 
 ```
-Unqualified output value declaration has been deprecated - replace `tuple sampleName,..` with `tuple val(sampleName),..`
+ls -lh
 ```
 
-We did also try using the [nf-core/viral-recon](https://nf-co.re/viralrecon) viral nextflow pipeline, which is highly recommended (not just for SARS-CoV-2), but performance was not great on our small VM.
+***Command breakdown:***
+* **-l** tells the list (**ls**) command to give the output in a long list format, whilst the **h** tells it to provide file sizes in a human readable format, this is the 5th column, which will have the size of each file in a format such as 2.5M (M for megabytes) or 9.5G (G for gigabytes).
 
-There is a very nice [SARS-CoV-2 sequencing data analysis tutorial](https://github.com/cambiotraining/sars-cov-2-genomics) created by CamBioTraining, which includes [nf-core/viral-recon](https://nf-co.re/viralrecon) instructions.
+***
 
-This MinION tutorial is based on the original [ARTIC](https://artic.network) network's [nCoV-2019 bioinformatics protocol](https://artic.network/ncov-2019/ncov2019-bioinformatics-sop.html).
+### Questions
+**Question 3** – How big is the SAM file compared to the BAM file?
+
+***
+
+**NB:** If your SAM file is 0B (i.e. 0 bytes, empty) then something went wrong with the bwa alignment step, so restart from there. If you SAM file is fine (i.e. >0), but your BAM file is 0B (i.e. empty), then something went wrong with your SAM to BAM conversion so re-do that step. 
+
+We don’t need our original SAM file anymore (as we have the BAM file now) so we remove (rm) the SAM file 1b.sam:
+
+```
+rm 1b.sam
+```
+
+## 2.4: Basic alignment statistics
+
+One common thing to check is how many reads have been aligned (or mapped) to the reference, and how many are not aligned (or unmapped). Samtools can report this for us easily, utilising the aligner SAM flags you learnt about in the previous session.
+
+**Reminder:** the 2nd column in the SAM file contains the flag for the read alignment. If the flag includes the number 4 flag in its makeup then the read is unmapped, if it doesn’t include the number 4 in it's makeup then it is mapped.
+
+### Number of unmapped reads
+```
+samtools view -c -f4 1b.bam
+```
+
+***Command breakdown***
+
+1.	**samtools view** = to view the file 1b.bam
+2.	**–c** = count the read alignments
+3.	**–f4** = only include read alignments that do have the unmapped flag 4
+
+### Number of mapped read alignments:
+```
+samtools view -c -F4 1b.bam
+```
+
+***Command breakdown***
+
+1.	**samtools view** = to view the file 1b.bam
+2.	**–c** = count the read alignments
+3.	**–F4** = skip read alignments that contain the unmapped Flag 4 
+
+***
+### Questions
+
+**Question 4** – how many reads are mapped to the 1b_hcv_ref.fasta genome?
+
+**Question 5** – how many reads are unmapped?
+***
+
+Technically, the above command gives the number of mapped read **alignments** not reads. A read could be mapped equally well to multiple positions (one will be called the primary alignment, and others secondary alignments [sam flag 256]), or a read could be split into two parts (e.g. spliced) with one part being the primary alignment and the others supplementary [sam flag 2048]
+
+So to get the true number of mapped reads you need to count only the alignments that do not have flags 4 (unmapped), 256 (not primary), and 2048 (supplementary) = 4 + 256 + 2048 = 2308
+
+### Number of mapped reads
+
+```
+samtools view -c -F4 -F256 -F2048 1b.bam
+```
+
+or summing up the F flag values together:
+
+```
+samtools view -c -F2308 1b.bam
+```
+
+For small RNA viruses, secondary and supplementary alignments tend to be rare, but it is important to know the distinction between mapped **reads** and mapped read **alignments**.
+
+# 3: Alignment on your own
+
+You now need to use bwa to align the reads to the 1a_hcv_ref.fasta reference sequence – later in the visualisation and summary statistics section we will be comparing the 1a vs 1b alignment results.
+
+You need to work out the commands yourself based on the previous commands for the 1b_hcv_ref.fasta reference. 
+
+Here is a reminder of the commands you used for 1b HCV which you will need to adapt. 
+
+**NB:** Essentially, you will want to change the reference name in the bwa command, and all of the SAM/BAM filenames in the bwa and samtools commands from 1b to 1a.
+
+```
+bwa index 1b_hcv_ref.fasta
+```
+```
+bwa mem -t 4 1b_hcv_ref.fasta hcv_sim_R1.fq hcv_sim_R2.fq > 1b.sam
+```
+```
+samtools sort 1b.sam -o 1b.bam
+```
+```
+samtools index 1b.bam
+```
+```
+rm 1b.sam
+```
+```
+samtools view -c -f4 1b.bam
+```
+```
+samtools view -c -F2308 1b.bam
+```
+
+***
+### Questions
+
+**Question 6** – how many reads are mapped to the 1a_hcv_ref.fasta genome?
+
+**Question 7** – how many reads are unmapped?
+
+**Question 8** – which reference assembly has the most mapped reads: 1a\_hcv or 1b\_hcv? Therefore, which reference sequence is better (1a or 1b)?
+***
+
+# 4: Extra Data
+
+If you are looking for something extra to do, there are additional data sets located in the folder:
+
+### ~/Richard/Ebola/
+
+You will find a set of (gzipped) FASTQ paired end read files, and a reference FASTA sequence to align them to.
+
+The reads are from a patient from the ebola epidemic in West Africa 2014 {Gire et al, 2014} [https://www.ncbi.nlm.nih.gov/pubmed/25214632](https://www.ncbi.nlm.nih.gov/pubmed/25214632)
+
+The reference ebola sequence is from a 2007 outbreak in Democratic Republic of Congo. 
+
+Try aligning the reads to the reference yourself.
+
+### ~/Richard/Noisey/
+
+This is a real HCV sample, but the read quality is quite poor making it quite noisey. Again, two HCV ref sequences are supplied (HCV_1a and HCV_1B). Align the paired end reads to each reference and determine what subtype the sample is by comparing mapping and coverage statistics.
+
+### ~/Richard/Mystery/
+
+This is a mystery sample, combine all the given references sequences into one file using the “cat” command, align the reads to that combined reference and then determine what the virus in the sample is.
+ 
+# 5: Assembly Visualisation and Statistics Practical
+
+In this practical, we will be checking our reference assembly from the previous session. We will use tools to generate summary statistics of the depth and breadth of the coverage across the genome, coverage plots, and visualisation of our assembly using tools such as Tablet and weeSAM. Later sessions of the course will cover how to call the consensus sequence and variants.
+
+## 5.1: Setup
+
+In the previous session, you should have bwa aligned the paired reads onto two different HCV genomes (types 1a and 1b).
+
+This should have resulted in two BAM files in your HCV folder, lets check:
+
+```
+cd ~/Richard/HCV/
+```
+
+```
+ls
+```
+
+You should see (amongst others):
+
+**1a.bam**  
+**1a.bam.bai**  
+**1b.bam**  
+**1b.bam.bai**  
+
+Along with the two reference sequences:
+
+**1a\_hcv\_ref.fasta**  
+**1b\_hcv\_ref.fasta**  
+
+We need all these files to proceed, so if you don’t have them – ask for help and we can copy across pre-computed versions.
+
+## 5.2: Summary Statistics with weeSAM
+
+We previously used samtools to count the number of mapped and unmapped reads (using samtools view -c commands), which suggested that HCV 1a was a better reference sequence for our sample based on a greater number of mapped reads, but let’s explore this is more detail using a tool called weeSAM: https://github.com/centre-for-virus-research/weeSAM
+
+weeSAM analyses a SAM or BAM file, generates a graphical coverage plot, and reports a range of summary statistics such as:
+
+* **Ref_Name**: The identifier of the reference.
+* **Ref_Len**: The length in bases of each reference.
+* **Mapped\_Reads**: Number of reads mapped to each reference.
+* **Breadth**: The number of sites in the genome covered by reads.
+* **%\_Covered**: The percent of sites in the genome which have coverage.
+* **Min\_Depth**: Minimum read depth observed.
+* **Max\_Depth**: Max read depth observed.
+* **Avg\_Depth**: Mean read depth observed.
+* **Std\_Dev**: Standard deviation of the mean (Avg_Depth).
+* **Above\_0.2_Depth**: Percentage of sites which have greater than 0.2 * Avg_Depth.
+* **Above\_1_Depth**: Percentage of sites which are above Avg_Depth.
+* **Above\_1.8_Depth**: Percentage of sites which have greater than 1.8 * Avg_Depth.
+* **Variation\_Coefficient**: The mean of Std_Dev of the mean.
+
+The Average Depth (Avg_Depth) is perhaps the most important field, along with Breadth which will tell you how much of the genome is covered by aligned reads. But the fields such as Std\_Dev and Above_0.2_Depth can give an indication of the variability in the coverage across the genome.
+
+Let’s run weeSAM on our samples:
+
+```
+weeSAM --bam 1b.bam --html 1b
+```
+
+An explanation of this command is:
+
+1.	**weeSAM**: the name of the program we are using
+2.	**--bam**: flag to signify input bam file
+3.	**1b.bam**: the name of our bam file to analyse
+4.	**--html**: flag to signify output html file
+5.	**1b**: the name prefix to use for the output
+
+If you list the contents of the directory you should see that a folder called **1b\_html\_results** has been created:
+
+```
+ls
+```
+
+Inside this folder is a HTML file that we can view in a web browser (like Firefox or Chrome), the HTML file has the summary statistics and coverage plot so lets take a look and open the html file: 
+
+```
+firefox 1b_html_results/1b.html
+```
+
+You should see something like this:
+
+![](https://github.com/WCSCourses/GCV23/blob/main/modules/ReferenceAlignment/1b_weesam_summ.png)
+
+***
+### Questions
+**Question 9** – what is the average depth of coverage across the 1b HCV reference genome?
+***
+
+Now let’s view the coverage plot by clicking on the hyperlink (blue and underlined) in the Ref_Name column, you should see a coverage plot similar to this:
+
+![](https://github.com/WCSCourses/GCV23/blob/main/modules/ReferenceAlignment/1b_weesam.png)
+
+The x-axis represents the genome position, whilst the y-axis represents the Depth of Coverage at each genome position. 
+
+**NB:** The reference sequence filename is 1b_hcv_ref.fasta, but the actual name of the sequence itself is 1|b|EU781827, you can open up the file yourself to check this if you want (head –n1 1b_hcv_ref.fasta).
+
+Although you do expect variation in coverage across the genome, the numerous regions of near zero coverage suggest that the HCV 1b reference is not ideal, and the aligner has struggled to effectively map reads onto it in this regions – presumably because the reference is too divergent from the viral population in the sample at these regions. 
+
+**Close the weeSAM and Firefox windows before proceeding!**
+
+### Common issue
+A common issue here is due to the fact that we have launched firefox from the terminal (wihtout running it background - see advanced linux commands). In order to get our command prompt back (the manager@GCV2023) we need to close the firefox window down, the prompt should then return.
+
+## 5.3: Coverage plot on your own
+
+Your task now is to run weeSAM on the 1a.bam file. So you will need to adapt the previous weeSAM command, a reminder of it is:
+
+```
+weeSAM --bam 1b.bam --html 1b
+```
+
+***
+### Questions
+**Question 10** – what is the average depth of coverage across the HCV 1a reference genome?
+
+**Question 11** – how does the coverage plot of HCV 1a compare to HCV 1b? Do you think it is better?
+***
+
+## 5.4. Visualisation with Tablet
+
+[Tablet](https://ics.hutton.ac.uk/tablet/) is a tool for the visualisation of next generation sequence assemblies and alignments. It goes beyond simple coverage plots, and allows you to scroll across the genome, zoom into errors of interests, highlight mutations to the reference, and investigate the assembly.
+
+Tablet requires three files:
+
+1.	A bam file, e.g. 1a.bam
+2.	A bam index file, e.g. 1a.bam.bai
+3.	A reference sequence file: e.g. 1a\_hcv\_ref.fasta
+
+**Tablet demonstration**
+
+
+
+
+
 
 ## 1.2: Illumina Tutorial
 
