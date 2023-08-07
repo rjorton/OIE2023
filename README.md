@@ -26,6 +26,7 @@ This practical is associated with a lecture on Reference Alignment of High-Throu
 	+ [2.2: Aligning the reads to the reference](#22-aligning-the-reads-to-the-reference)
 	+ [2.3: Converting SAM to BAM](#23-converting-SAM-to-BAM)
 	+ [2.4: Basic alignment statistics](#24-basic-alignment-statistics)
+ 	+ [2.5: Coverage plot](25-coverage-plot)	 
 * [3: Alignment on your own](#3-alignment-on-your-own)
 * [4: Extra data](#4-extra-data)
 * [5: Assembly Visualisation and Statistics Practical](#5-assembly-visualisation-and-statistics-practical)
@@ -326,105 +327,10 @@ samtools view -c -F2308 1b.bam
 
 For small RNA viruses, secondary and supplementary alignments tend to be rare, but it is important to know the distinction between mapped **reads** and mapped read **alignments**.
 
-# 3: Alignment on your own
+## 2.5: Coverage plots
 
-You now need to use bwa to align the reads to the 1a_hcv_ref.fasta reference sequence – later in the visualisation and summary statistics section we will be comparing the 1a vs 1b alignment results.
 
-You need to work out the commands yourself based on the previous commands for the 1b_hcv_ref.fasta reference. 
-
-Here is a reminder of the commands you used for 1b HCV which you will need to adapt. 
-
-**NB:** Essentially, you will want to change the reference name in the bwa command, and all of the SAM/BAM filenames in the bwa and samtools commands from 1b to 1a.
-
-```
-bwa index 1b_hcv_ref.fasta
-```
-```
-bwa mem -t 4 1b_hcv_ref.fasta hcv_sim_R1.fq hcv_sim_R2.fq > 1b.sam
-```
-```
-samtools sort 1b.sam -o 1b.bam
-```
-```
-samtools index 1b.bam
-```
-```
-rm 1b.sam
-```
-```
-samtools view -c -f4 1b.bam
-```
-```
-samtools view -c -F2308 1b.bam
-```
-
-***
-### Questions
-
-**Question 6** – how many reads are mapped to the 1a_hcv_ref.fasta genome?
-
-**Question 7** – how many reads are unmapped?
-
-**Question 8** – which reference assembly has the most mapped reads: 1a\_hcv or 1b\_hcv? Therefore, which reference sequence is better (1a or 1b)?
-***
-
-# 4: Extra Data
-
-If you are looking for something extra to do, there are additional data sets located in the folder:
-
-### ~/Richard/Ebola/
-
-You will find a set of (gzipped) FASTQ paired end read files, and a reference FASTA sequence to align them to.
-
-The reads are from a patient from the ebola epidemic in West Africa 2014 {Gire et al, 2014} [https://www.ncbi.nlm.nih.gov/pubmed/25214632](https://www.ncbi.nlm.nih.gov/pubmed/25214632)
-
-The reference ebola sequence is from a 2007 outbreak in Democratic Republic of Congo. 
-
-Try aligning the reads to the reference yourself.
-
-### ~/Richard/Noisey/
-
-This is a real HCV sample, but the read quality is quite poor making it quite noisey. Again, two HCV ref sequences are supplied (HCV_1a and HCV_1B). Align the paired end reads to each reference and determine what subtype the sample is by comparing mapping and coverage statistics.
-
-### ~/Richard/Mystery/
-
-This is a mystery sample, combine all the given references sequences into one file using the “cat” command, align the reads to that combined reference and then determine what the virus in the sample is.
- 
-# 5: Assembly Visualisation and Statistics Practical
-
-In this practical, we will be checking our reference assembly from the previous session. We will use tools to generate summary statistics of the depth and breadth of the coverage across the genome, coverage plots, and visualisation of our assembly using tools such as Tablet and weeSAM. Later sessions of the course will cover how to call the consensus sequence and variants.
-
-## 5.1: Setup
-
-In the previous session, you should have bwa aligned the paired reads onto two different HCV genomes (types 1a and 1b).
-
-This should have resulted in two BAM files in your HCV folder, lets check:
-
-```
-cd ~/Richard/HCV/
-```
-
-```
-ls
-```
-
-You should see (amongst others):
-
-**1a.bam**  
-**1a.bam.bai**  
-**1b.bam**  
-**1b.bam.bai**  
-
-Along with the two reference sequences:
-
-**1a\_hcv\_ref.fasta**  
-**1b\_hcv\_ref.fasta**  
-
-We need all these files to proceed, so if you don’t have them – ask for help and we can copy across pre-computed versions.
-
-## 5.2: Summary Statistics with weeSAM
-
-We previously used samtools to count the number of mapped and unmapped reads (using samtools view -c commands), which suggested that HCV 1a was a better reference sequence for our sample based on a greater number of mapped reads, but let’s explore this is more detail using a tool called weeSAM: https://github.com/centre-for-virus-research/weeSAM
+We previously used samtools to count the number of mapped and unmapped reads (using samtools view -c commands), now let’s explore the read mapping in more detail by creating a coverage plot using a tool called weeSAM: (https://github.com/centre-for-virus-research/weeSAM)[https://github.com/centre-for-virus-research/weeSAM]
 
 weeSAM analyses a SAM or BAM file, generates a graphical coverage plot, and reports a range of summary statistics such as:
 
@@ -444,7 +350,7 @@ weeSAM analyses a SAM or BAM file, generates a graphical coverage plot, and repo
 
 The Average Depth (Avg_Depth) is perhaps the most important field, along with Breadth which will tell you how much of the genome is covered by aligned reads. But the fields such as Std\_Dev and Above_0.2_Depth can give an indication of the variability in the coverage across the genome.
 
-Let’s run weeSAM on our samples:
+Let’s run weeSAM on our sample:
 
 ```
 weeSAM --bam 1b.bam --html 1b
@@ -494,22 +400,74 @@ Although you do expect variation in coverage across the genome, the numerous reg
 ### Common issue
 A common issue here is due to the fact that we have launched firefox from the terminal (wihtout running it background - see advanced linux commands). In order to get our command prompt back (the manager@GCV2023) we need to close the firefox window down, the prompt should then return.
 
-## 5.3: Coverage plot on your own
 
-Your task now is to run weeSAM on the 1a.bam file. So you will need to adapt the previous weeSAM command, a reminder of it is:
+# 3: Alignment on your own
+
+You now need to use bwa to align the reads to the 1a_hcv_ref.fasta reference sequence – later in the visualisation and summary statistics section we will be comparing the 1a vs 1b alignment results.
+
+You need to work out the commands yourself based on the previous commands for the 1b_hcv_ref.fasta reference. 
+
+Here is a reminder of the commands you used for 1b HCV which you will need to adapt. 
+
+**NB:** Essentially, you will want to change the reference name in the bwa command, and all of the SAM/BAM filenames in the bwa and samtools commands from 1b to 1a.
 
 ```
+bwa index 1b_hcv_ref.fasta
+```
+```
+bwa mem -t 4 1b_hcv_ref.fasta hcv_sim_R1.fq hcv_sim_R2.fq > 1b.sam
+```
+```
+samtools sort 1b.sam -o 1b.bam
+```
+```
+samtools index 1b.bam
+```
+```
+rm 1b.sam
+```
+```
+samtools view -c -f4 1b.bam
+```
+```
+samtools view -c -F2308 1b.bam
+
 weeSAM --bam 1b.bam --html 1b
 ```
 
 ***
 ### Questions
-**Question 10** – what is the average depth of coverage across the HCV 1a reference genome?
 
-**Question 11** – how does the coverage plot of HCV 1a compare to HCV 1b? Do you think it is better?
+**Question 6** – how many reads are mapped to the 1a_hcv_ref.fasta genome?
+
+**Question 7** – how many reads are unmapped?
+
+**Question 8** – which reference assembly has the most mapped reads: 1a\_hcv or 1b\_hcv and which coverage plot looks better? Therefore, which reference sequence is better (1a or 1b)?
 ***
 
-## 5.4. Visualisation with Tablet
+# 4: Extra Data
+
+If you are looking for something extra to do, there are additional data sets located in the folder:
+
+### ~/Richard/Ebola/
+
+You will find a set of (gzipped) FASTQ paired end read files, and a reference FASTA sequence to align them to.
+
+The reads are from a patient from the ebola epidemic in West Africa 2014 {Gire et al, 2014} [https://www.ncbi.nlm.nih.gov/pubmed/25214632](https://www.ncbi.nlm.nih.gov/pubmed/25214632)
+
+The reference ebola sequence is from a 2007 outbreak in Democratic Republic of Congo. 
+
+Try aligning the reads to the reference yourself.
+
+### ~/Richard/Noisey/
+
+This is a real HCV sample, but the read quality is quite poor making it quite noisey. Again, two HCV ref sequences are supplied (HCV_1a and HCV_1B). Align the paired end reads to each reference and determine what subtype the sample is by comparing mapping and coverage statistics.
+
+### ~/Richard/Mystery/
+
+This is a mystery sample, combine all the given references sequences into one file using the “cat” command, align the reads to that combined reference and then determine what the virus in the sample is.
+ 
+# 5: Assembly Visualisation with Tablet
 
 [Tablet](https://ics.hutton.ac.uk/tablet/) is a tool for the visualisation of next generation sequence assemblies and alignments. It goes beyond simple coverage plots, and allows you to scroll across the genome, zoom into errors of interests, highlight mutations to the reference, and investigate the assembly.
 
@@ -521,30 +479,47 @@ Tablet requires three files:
 
 **Tablet demonstration**
 
+## 6: Consensus and variant calling
 
+In this practical, rather than using our previous simulated HCV samples, we will use some real SARS-CoV-2 samples as people are more likely to be familiar with this virus (and it's ORFs and mutations). These samples have already been cleaned, aligned and trimmed to the Wuhan-Hu-1 reference sequence and have indexed BAM files that are ready for consensus and variant calling. 
 
+### 6.1: Setup and data
 
-
-
-## 1.2: Illumina Tutorial
-
-In the above tutorial, we were working with MinION data. In this tutorial we will be using paired end Illumina SARS-CoV-2 data. Although this uses different computational tools, the two approaches are in essence very similar.
-
-### 1.2.1: Setup and data
-
-We do not need to use a conda environment as all the tools we need are already installed directly on the VM: 
-
-* [trim_galore](https://www.bioinformatics.babraham.ac.uk/projects/trim_galore/) for read trimming (the reads are pre-trimmed using trim_galore)
-* [bwa](https://github.com/lh3/bwa) for read alignment
-* [samtools](http://www.htslib.org) for SAM/BAM conversion
-* [ivar](https://andersen-lab.github.io/ivar/html/manualpage.html) for primer trimming and consensus calling
-* [weeSAM](https://github.com/centre-for-virus-research/weeSAM) for coverage plots.
-
-First, lets move into the Illumina data directory:
+First, lets move into the SARS2 data directory:
 
 ```
-cd ~/SARS-CoV-2/Illumina/200703_M01569_0148_000000000-J53HN_Batch70/
+cd ~/Richard/SARS2
 ```
+
+If you list the contents of this directory you will see
+In this session, we will be working on some more Illumina paired end read data. The FASTQ data was downloaded from the [European Nucleotide Archive](https://www.ebi.ac.uk/ena/browser) (ENA), and there are 4 samples in total (the samples are not related to one another), with R1 and R2 FASTQ files for each:
+
+* ERR9105817 - ARTIC primer version 4.1
+* ERR9731990 - ARTIC primer version 4.1
+* ERR9761275 - ARTIC primer version 4.1
+* ERR9788433 - ARTIC primer version 4.1
+
+The primer scheme to use is:
+
+```
+~/artic-ncov2019/primer_schemes/nCoV-2019/V4.1/SARS-CoV-2.scheme.bed
+```
+
+Your task is to work as a group in the breakout rooms to analyse these samples. Initial read QC (with trim_galore) is not required (but you could add it if you wanted).  You should:
+
+* align the reads to the Wuhan-Hu-1 reference sequence
+* Report the number of mapped reads
+* Trim the ARTIC primers
+* Call a consensus sequence
+* Use Pangolin to assign a lineage
+* Use SPEAR to call the mutations
+
+This is a flexible session, and a chance to collate all the steps that you have learnt onto a single sample(s).
+
+As a group you could:
+
+* Analyse a sample each and collate the results. As there are only 4 samples (and groups will likely be larger than 4) - multiple people could analyse a single sample and check you get the same results
+* Write a bash script to process the sample automatically. Remember all the steps to analyse a sample are the same, it is just the input/output names that are changing. Completed example bash scripts will be uploaded here after the session.
 
 The data in this folder is from a run on an Illumina MiSeq machine. The name of the folder implies it was run on the 3rd July 2020 (200703), the machine ID is M01569, the run ID is 0148_000000000-J53HN, and this was called Batch70 locally within the [Medical Research Council-University of Glasgow Centre for Virus Research](https://www.gla.ac.uk/research/az/cvr/) (CVR) as part of a Covid-19 Genomics UK Consortium ([COG-UK](https://www.cogconsortium.uk)) sequencing run. The samples were sequenced using Version 1 (V1) of the ARTIC [nCoV-2019](https://github.com/artic-network/primer-schemes/tree/master/nCoV-2019) amplicon primers.
 
@@ -790,504 +765,6 @@ samtools index CVR2058.bam
 samtools mpileup -aa -A -d 0 -Q 0 CVR2058.bam | ivar consensus -p CVR0258 -t 0.4
 ```
 
-
-
-## 2: SARS-CoV-2 Lineages and Mutations
-
-In this session, we will be focussing on analysis steps you can do after you have created a SARS-CoV-2 consensus sequence:
-
-* Determining the lineage of the viral genome sequence using [Pangolin](https://cov-lineages.org/index.html)
-* Calling the mutations present within the viral genome sequence using [SPEAR](https://github.com/m-crown/SPEAR)
-
-### 2.1: Pangolin lineages
-
-A **lineage** can be defined as a group of closely related viruses with a common ancestor. SARS-CoV-2 has now evolved into many different lineages, some of which are known as a Variant of Concern (VOC) or Variant Under Investigation (VUI), and some have World Health Organisation (WHO) labels. 
-
-In this tutorial we will be focussing on lineages defined by the [Pangolin](https://cov-lineages.org/index.html) tool. [Pangolin](https://cov-lineages.org/index.html) stands for **P**hylogenetic **A**ssignment of **N**amed **G**lobal **O**utbreak **LIN**eages.  Although [NextStrain](https://nextstrain.org/blog/2020-06-02-SARSCoV2-clade-naming) and [GISAID](https://gisaid.org/resources/statements-clarifications/clade-and-lineage-nomenclature-aids-in-genomic-epidemiology-of-active-hcov-19-viruses/) maintain their own clade and lineage nomenclatures we will simply be focussing on Pangolin in this tutorial.
-
-Some of the most well known lineages are (sorted by lineage number):
-
-| Lineage | Shortcut Lineage | WHO Label |
-| --- | --- | ---|
-| [B.1.1.7](https://cov-lineages.org/lineage.html?lineage=B.1.1.7) | | Alpha | 
-| [B.1.1.28.1](https://cov-lineages.org/lineage.html?lineage=P.1) | P.1 | Gamma |
-| [B.1.1.28.2](https://cov-lineages.org/lineage.html?lineage=P.2) | P.2 | Zeta |
-| [B.1.1.28.1.3](https://cov-lineages.org/lineage.html?lineage=P.3) | P.3 | Theta |
-| [B.1.1.529.1](https://cov-lineages.org/lineage.html?lineage=BA.1) | BA.1 | Omicron |
-| [B.1.1.529.2](https://cov-lineages.org/lineage.html?lineage=BA.2) | BA.2 | Omicron |
-| [B.1.1.529.3](https://cov-lineages.org/lineage.html?lineage=BA.3) | BA.3 | Omicron |
-| [B.1.1.529.4](https://cov-lineages.org/lineage.html?lineage=BA.4) | BA.4 | Omicron |
-| [B.1.1.529.5](https://cov-lineages.org/lineage.html?lineage=BA.5) | BA.5 | Omicron |
-| [B.1.351](https://cov-lineages.org/lineage.html?lineage=B.1.351) | | Beta |
-| [B.1.427](https://cov-lineages.org/lineage.html?lineage=B.1.427) | | Epsilon |
-| [B.1.429](https://cov-lineages.org/lineage.html?lineage=B.1.429) | | Epsilon |
-| [B.1.525](https://cov-lineages.org/lineage.html?lineage=B.1.525) | | Eta |
-| [B.1.526](https://cov-lineages.org/lineage.html?lineage=B.1.526) | | Iota |
-| [B.1.617.1](https://cov-lineages.org/lineage.html?lineage=B.1.617.1) | | Kappa |
-| [B.1.617.2](https://cov-lineages.org/lineage.html?lineage=B.1.617.2) | | Delta |
-| [B.1.621](https://cov-lineages.org/lineage.html?lineage=B.1.621) | | Mu |
-| [C.37](https://cov-lineages.org/lineage.html?lineage=C.37) | | Lamda |
-| [XD](https://cov-lineages.org/lineage.html?lineage=XD) | | Deltacron (not a WHO label) |
-
-
-When you have obtained a consensus sequence for a sample, determining it's lineage is a typical analysis step. To do this we will use the [Pangolin](https://github.com/cov-lineages/pangolin) command line tool (although there is also a [Pangolin web tool](https://pangolin.cog-uk.io) available).
-
-The pangolin conda environment has already been installed on the VM, but we do need to activate it when we want to use it:
-
-```
-conda activate pangolin
-```
-
-Now lets move into the folder where we will work:
-
-```
-cd ~/SARS-CoV-2/Variants/
-```
-
-If you list the contents of this directory you should see a file called ```variant_seqs.fasta``` which contains 19 sequences from Scotland from 2021-2022, you can see their names by typing:
-
-```
-grep ">" variant_seqs.fasta 
-```
-
-To run Pangolin to get a lineage assignment on these sequences we simply type:
-
-```
-pangolin variant_seqs.fasta
-```
-
-It is important to remember that a pangolin lineage assignment is a **best guess** at what the lineage of a sequence may be based on available data. Once finished this will create a file called ```lineage_report.csv```. This is a comma separated file which can simply view using ```more``` or ```less``` or ```cat``` etc. The file contains one line of output per input sequence, and each line consists of a number of fields (full descriptions can be found [here](https://cov-lineages.org/resources/pangolin/output.html)):
-
-1. **taxon:** the name of sequence
-2. **lineage:** the **most likely** linage assigned by pangolin
-3. **conflict:** if the number (N) in this field is > 0, then it means the sequence could have fitted into N different lineage categories. 
-4. **ambiguity_score:** SARS-CoV-2 amplicon generated genomes can frequently have failed amplicons creating tracts of Ns in the genome sequence. The ambiguity score is a function of the quantity of missing data at relevant positions in a sequence i.e. lineage defining mutation positions. It represents the proportion of relevant sites in a sequence which were imputed to the reference values. A score of 1 indicates that no sites were imputed, while a score of 0 indicates that more sites were imputed than were not imputed. This score only includes sites which are used by the decision tree to classify a sequence.
-5. **scorpio_call:** [Scorpio](https://github.com/cov-lineages/scorpio) is a tool that assigns a constellation to the sequence. A [constellation](https://github.com/cov-lineages/constellations) is a collection of mutations which are functionally meaningful, but which may have arisen independently a number of times. One of the uses of Scorpio constellations is to define [lineages of concern](https://cov-lineages.org/constellations.html), and if appropriate assign the input sequence to one e.g. 'Omicron (BA.5-like)'.
-6. **scorpio_support:** see [Pangolin documentation](https://cov-lineages.org/resources/pangolin/output.html))
-7. **scorpio_conflict:** see [Pangolin documentation](https://cov-lineages.org/resources/pangolin/output.html))
-8. **scorpio_notes:** see [Pangolin documentation](https://cov-lineages.org/resources/pangolin/output.html))
-9. **version:** see [Pangolin documentation](https://cov-lineages.org/resources/pangolin/output.html))
-10. **pangolin_version:** see [Pangolin documentation](https://cov-lineages.org/resources/pangolin/output.html))
-11. **scorpio_version:** see [Pangolin documentation](https://cov-lineages.org/resources/pangolin/output.html))
-12. **constellation_version:** see [Pangolin documentation](https://cov-lineages.org/resources/pangolin/output.html))
-13. **is_designated:** see [Pangolin documentation](https://cov-lineages.org/resources/pangolin/output.html))
-14. **qc_status:** whether the sequence passed the min length and max N base thresholds
-15. **qc_notes:** see [Pangolin documentation](https://cov-lineages.org/resources/pangolin/output.html))
-16. **note:** see [Pangolin documentation](https://cov-lineages.org/resources/pangolin/output.html))
-
-As there are many fields in the file, we will ```cut``` the first 5 columns out to ease reading:
-
-```
-cut -f1-5 -d ',' lineage_report.csv 
-```
-
-**Question:** what is the pangolin lineage assignment for each of the sequences in the ```variant_seqs.fasta``` file? The sequence names in the input file were:
-
-* Scotland/LSPA-3E62463/2022
-* Scotland/LSPA-3E3B700/2022
-* Scotland/QEUH-3DC59CA/2022
-* Scotland/QEUH-3D90306/2022
-* Scotland/QEUH-3D43C43/2022
-* Scotland/CVR14531/2022
-* Scotland/QEUH-36897FC/2022
-* Scotland/QEUH-36491AF/2022
-* Scotland/QEUH-2D86BD1/2021
-* Scotland/QEUH-2D7F704/2021
-* Scotland/QEUH-1BA3933/2021
-* Scotland/QEUH-1B0246E/2021
-* Scotland/QEUH-1725CCB/2021
-* Scotland/QEUH-1585B0A/2021
-* Scotland/QEUH-158D786/2021
-* Scotland/CAMC-14DE972/2021
-* Scotland/QEUH-147E6F5/2021
-* Scotland/QEUH-13ADEF6/2021
-* Scotland/QEUH-138F944/2021
-
-As we have now finished with Pangolin we should deactivate the Conda environment:
-
-```
-conda deactivate
-```
-
-To finish, one of the best places to keep an eye on potentially new lineages is the Pangolin [cov-lienages GitHub issues](https://github.com/cov-lineages/pango-designation/issues) web page.
-
-Other potentially useful websites are:
-
-* [SARS-CoV-2 Variant definitions](https://github.com/phe-genomics/variant_definitions)
-* [WHO SARS-CoV-2 Variants](https://www.who.int/en/activities/tracking-SARS-CoV-2-variants/)
-* [European Centre for Disease Control - Variants of Concern](https://www.ecdc.europa.eu/en/covid-19/variants-concern)
-* [cov-lineages lineage list](https://cov-lineages.org/lineage_list.html)
-* [Pangolin Lineage aliases](https://github.com/cov-lineages/pango-designation/blob/master/pango_designation/alias_key.json)
-* [Outbreak.info](https://outbreak.info)
-* [Virological](http://virological.org/)
-* [NextStrain-ncov](https://nextstrain.org/ncov)
-* [COV-GLUE](http://cov-glue.cvr.gla.ac.uk/)
-* [COG-UK Mutation Explorer](http://sars2.cvr.gla.ac.uk/cog-uk/)
-* [ARTIC Network Field Bioinformatics](https://github.com/artic-network/fieldbioinformatics)
-
-
-### 2.2: SPEAR mutations
-
-[SPEAR](https://github.com/m-crown/SPEAR) stands for **S**ystematic **P**rot**E**in **A**nnotato**R**, it is a mutation calling and annotation tool for SARS-CoV-2 genomes that provides a comprehensive annotation of all the protein products, in particular, Spike (S) mutations are annotated with a range of scores that provide indications of their likely effects on ACE2 binding, and likely contribution to immune escape.
-
-SPEAR has different modes and can run on VCF, alignment, or genome consensus sequence files.  We will be using the consensus option to run SPEAR on the SARS-CoV-2 consensus sequences used above. SPEAR has been installed on the VM, but we need to activate it's Conda environment when we want to use it:
-
-```
-conda activate spear
-```
-
-Unfortunately, SPEAR does not seem to work on a multi-sequence FASTA file so we will need to split the ```variant_seqs.fasta``` into individual sequence FASTA files. I wrote a simple BASH script called **seq_splitter.sh** to do this which you can download from the [course GitHub repository](https://github.com/WCSCourses/ViralBioinfAsia2022/blob/main/course_data/SARS-CoV-2_workflows/seq_splitter.sh) using ```wget```:
-
-```
-wget https://tinyurl.com/vgba2022/seq_splitter.sh
-```
-**NB:** I made a shortcut URL using [tinyurl](https://tinyurl.com), the full URL was https://raw.githubusercontent.com/WCSCourses/ViralBioinfAsia2022/main/course\_data/SARS-CoV-2\_workflows/seq\_splitter.sh
-
-We now run the BASH script on the ```variant_seqs.fasta``` file:
-
-```
-bash seq_splitter.sh variant_seqs.fasta
-```
-
-If you list the contents of the directory you should now see lots of ```.fa``` files.
-
-```
-ls
-```
-
-We are not ready to use SPEAR. We can now run SPEAR on all the ```.fa``` files in the current directory using this command:
-
-```
-spear consensus --pangolin=none Scotland_CAMC-14DE972_2021.fa spear_camc
-```
-
-**NB:** Remember **TAB Completion** will make entering the sequence filename easy.
-
-Breaking this command down:
-
-* **spear:** the name of the program
-* **consensus:** the name of the function within the program to use
-* **--pangolin=none:** for this tutorial we are telling SPEAR not to run pangolin to lineage assign the sequences this is because it will check for pangolin updates which may take a while to download/upload on our VM. I would normally not include this option.
-* **Scotland\_CAMC-14DE972\_2021.fa:** the name of the input FASTA sequence to analyse
-* **spear_camc:** the name of the output file to store the results
-
-SPEAR will output colourful summary tables to the terminal whilst it is running. When it is finished we can examine some of it's outputs in more detail. 
-
-First the ```qc.csv``` file contains basic Quality Control information on the input sequence(s). 
-
-```
-more spear_camc/qc.csv
-```
-The file contains these fields
-
-* **sample\_id:** the sequence name
-* **global\_n:** the percentage of Ns in the whole sequence
-* **s\_n:** the percentage of Ns in the Spike gene
-* **s\_n\_contig:** the longest tract of Ns in the Spike gene
-* **rbd\_n:** the longest tract of Ns in the Receptor Binding Domain (RBD) of Spike
-
-It is important to check the quality of your sequences - a high proportion of Ns in a sequence will lead to uncertain lineage assignments and hinder downstream epidemiological investigations. In addition, a mutation can not be called if the codon contains Ns, leading to the old adage that absence of evidence is not evidence of absence.
-
-SPEAR also output a VCF file for each sequence in the ```final_vcfs``` folder of the output folder, as well as a detailed annotation file: 
-
-```
-more spear_camc/spear_annotation_summary.tsv 
-```
-
-For a full definition of the fields see the [SPEAR documentation](https://github.com/m-crown/SPEAR) under the **Column headings for annotation files** section. If we ```cut``` some of the most important fields to ease visibility:
-
-```
-cut -f 1-5,7,9,11 spear_camc/spear_annotation_summary.tsv 
-```
-This cuts the following fields (columns):
-
-* **1 sample_id:** the name of the sequence
-* **2 POS:** the genome position of the variant
-* **3 REF:** reference genome base(s)
-* **4 ALT:** the alternative base(s) i.e. the mutation/indel
-* **5 Gene_Name:** ORF1ab, S, ORF3a, E, M, ORF6, ORF7a, ORF7b, ORF8, N, variants between ORFs are flagged as intergenic.
-* **7 consequence_type:** e.g. missense_variant, synonymous_variant
-* **9 description:** Free text description of product, ORF1ab is further broken down here into nsp's	
-* **11 residues:** Amino acid residue changes in the format of N501Y (REF-AA residue ALT-AA)
-
-For our sample **Scotland\_CAMC\_14DE972\_2021** (which Pangolin assigned to the B.1.526 Iota lineage) we should see the following mutations in Spike:
-
-* L5F
-* T95I
-* D253G
-* E484K
-* D614G
-* A701V
-
-An alternative is to open the ```spear_annotation_summary.tsv``` file in **LibreOffice-Calc** which is an Excel like program. Navigate to the output folder, right click on the file, select Open with LibreOffice Calc, click OK (it should automatically of select Tab as the delimiter).
-
-We can simply run SPEAR on all the ```.fa``` files in the current directory ```.``` by using this command:
-
-```
-spear consensus --pangolin=none . spear_output
-```
-
-Although we can examine the same files as above (qc, annotation summary etc), we can also open up the HTML report that SPEAR creates to analyse the samples collectively. This is useful for comparing all the sequences on a single run, or if you have collated a set of related sequences together:
-
-
-```
-firefox spear_output/report/report.html 
-```
-
-Once finished with SPEAR, deactivate the conda environment:
-
-```
-conda deactivate
-```
-
-
-**Question:** what percentage of the samples contain the N501Y mutation in Spike (surface glycoprotein)? 
-
-### 2.3: Extra work
-
-If you have reached this point and have time to spare you could:
-
-1. Try running pangolin and/or SPEAR on the consensus sequences generated in the MinION and Illumina practicals
-2. Try using the [Pangolin web tool](https://pangolin.cog-uk.io) rather than the command line
-
-## 3: SARS-CoV-2 Phylogenetics
-
-In the previous sessions of this course you have learnt how to create sequence alignments and construct phylogenetic trees, using tools such as mafft and iqtree, these tools can (and are) readily applied to SARS-CoV-2 datasets. However, this session introduces a couple of additional phylogenetic tools that are available for SARS-CoV-2 (although though in general they are can be applied to other viruses), one focussed on placing your query genome sequences in the context of the millions already available and another focussed on epidemiological investigations. 
-
-### 3.1: UShER
-
-UShER stands for **U**ltrafast **S**ample placement on **E**xisting t**R**ees. UShER is a program for rapid, accurate placement of samples to existing phylogenies. It essentially enables real-time phylogenetic analyses of the SARS-CoV-2 pandemic which currently (August 2022) has over 11 million genome sequences publicly available.
-
-* [UShER paper](https://www.nature.com/articles/s41588-021-00862-7)
-* [UShER manual](https://usher-wiki.readthedocs.io/en/latest/)
-* [UShER GitHub](https://github.com/yatisht/usher)
-* [UShER Web Tool](https://genome.ucsc.edu/cgi-bin/hgPhyloPlace)
-
-UShER works by adding your sequence onto an exsiting phylogenetic tree. It is rapid because it does not need to re-build the phylogenetic tree from scratch - it is essentially just adding your sequence(s) to certain clusters within the existing tree (the clusters that contain the closest sequences in terms of mutations to the query sequence). However, creating an existing phylogenetic tree of millions of SARS-CoV-2 sequences to add to is by no means trivial - but UShER provide a daily update of all fully public SARS-CoV-2 sequences available for download [here](http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/). 
-
-**NB:** An important point here is that GISAID sequences are NOT fully public due to the GISAID license agreements to protect the rights of sequence submitters. Therefore, this 'fully public' UShER tree only contains sequences from GenBank, COG-UK, and the China National Center for Bioinformation - although this does represent around two thirds of all sequences available. 
-
-In this session, we will be using the [UShER Web Tool](https://genome.ucsc.edu/cgi-bin/hgPhyloPlace) (part of the [UCSC Genome Browser](https://genome.ucsc.edu/util.html)) to phylogenetically place  our sequences into the global tree of the SARS-CoV-2 pandemic. One advantage of this web tool is that it can utilise a phylogenetic tree which includes all available SARS-CoV-2 genomes (including those found only on GISAID).
-
-* On the VM use the Firefox browser to vist the [UShER Web Tool](https://genome.ucsc.edu/cgi-bin/hgPhyloPlace).
-* Click the **Browse** button at the top (depending on the browser, this is sometimes called **Choose File**)
-* Use the pop-up window to navigate to the ~/SARS-CoV-2/Variants folder and select the **Scotland\_CAMC-14DE972\_2021.fa** file
-* Under the 'Phylogenetic tree version' select the GISAID tree
-* Click the **Upload** button
-* **Wait for UShER to run** (it may take a while!)
-
-***
-
-![](https://github.com/WCSCourses/ViralBioinfAsia2022/blob/main/course_data/SARS-CoV-2_workflows/usher.png)
-**Figure 3.1.1:** UShER Web Tool Screenshot: [https://genome.ucsc.edu/cgi-bin/hgPhyloPlace](https://genome.ucsc.edu/cgi-bin/hgPhyloPlace).
-
-***
-
-When UShER has finished it will automatically redirect to a results page. A screenshot of the results you should obtain for the sequence Scotland\_CAMC-14DE972\_2021.fa is below.
-
-
-***
-
-![](https://github.com/WCSCourses/ViralBioinfAsia2022/blob/main/course_data/SARS-CoV-2_workflows/usher2.png)
-
-**Figure 3.1.2:** UShER results page for genome sequence Scotland\_CAMC-14DE972\_2021.fa 
-***
-
-The UShER output contains alot of useful information such as lineage assignments and mutations for each sequence analysed. To actually examine the cluster our sequence has been placed in within the glonal tree we can follow the automatic links to [NextStrain](https://nextstrain.org). You should see a tree similar to this (I changed the "Color By" option to "Pango lineage assigned by UShER").
-
-**NB:** As the global tree is updated daily, there is a chance the tree you get may be slightly different depending to the one belon when it is run.
-
-***
-
-![](https://github.com/WCSCourses/ViralBioinfAsia2022/blob/main/course_data/SARS-CoV-2_workflows/nextstrain.png)
-**Figure 3.1.3:** NextStrain visualisation of subtree for sequence Scotland\_CAMC-14DE972\_2021.fa. The colour scheme was changed using the "Color By" option to "Pango lineage assigned by UShER". Our uploaded seqeunce is highlighted in yellow. Note that our sequence was actually already in the gloabl tree - you can see the original Scotland/CAMC-14DE972/2021 sequence about 10 nodes above our uploaded on. 
-
-***
-
-
-As UShER may take a while to run (because this is a free and public resource), I have prerun each sequence and the NextStrain view of the subtree's can be found here:
-
-* [Scotland/LSPA-3E62463/2022](https://nextstrain.org/fetch/genome.ucsc.edu/trash/ct/subtreeAuspice1_genome_8bdf_97bb50.json)
-* [Scotland/LSPA-3E3B700/2022](https://nextstrain.org/fetch/genome.ucsc.edu/trash/ct/subtreeAuspice2_genome_8bdf_97bb50.json)
-* [Scotland/QEUH-3DC59CA/2022](https://nextstrain.org/fetch/genome.ucsc.edu/trash/ct/subtreeAuspice3_genome_8bdf_97bb50.json)
-* [Scotland/QEUH-3D90306/2022](https://nextstrain.org/fetch/genome.ucsc.edu/trash/ct/subtreeAuspice4_genome_8bdf_97bb50.json)
-* [Scotland/QEUH-3D43C43/2022](https://nextstrain.org/fetch/genome.ucsc.edu/trash/ct/subtreeAuspice5_genome_8bdf_97bb50.json)
-* [Scotland/CVR14531/2022](https://nextstrain.org/fetch/genome.ucsc.edu/trash/ct/subtreeAuspice6_genome_8bdf_97bb50.json)
-* [Scotland/QEUH-36897FC/2022](https://nextstrain.org/fetch/genome.ucsc.edu/trash/ct/subtreeAuspice7_genome_8bdf_97bb50.json)
-* [Scotland/QEUH-36491AF/2022](https://nextstrain.org/fetch/genome.ucsc.edu/trash/ct/subtreeAuspice8_genome_8bdf_97bb50.json)
-* [Scotland/QEUH-2D86BD1/2021](https://nextstrain.org/fetch/genome.ucsc.edu/trash/ct/subtreeAuspice9_genome_8bdf_97bb50.json)
-* [Scotland/QEUH-2D7F704/2021](https://nextstrain.org/fetch/genome.ucsc.edu/trash/ct/subtreeAuspice10_genome_8bdf_97bb50.json)
-* [Scotland/QEUH-1BA3933/2021](https://nextstrain.org/fetch/genome.ucsc.edu/trash/ct/subtreeAuspice11_genome_8bdf_97bb50.json)
-* [Scotland/QEUH-1B0246E/2021](https://nextstrain.org/fetch/genome.ucsc.edu/trash/ct/subtreeAuspice12_genome_8bdf_97bb50.json)
-* [Scotland/QEUH-1725CCB/2021](https://nextstrain.org/fetch/genome.ucsc.edu/trash/ct/subtreeAuspice13_genome_8bdf_97bb50.json)
-* [Scotland/QEUH-1585B0A/2021](https://nextstrain.org/fetch/genome.ucsc.edu/trash/ct/subtreeAuspice14_genome_8bdf_97bb50.json)
-* [Scotland/QEUH-158D786/2021](https://nextstrain.org/fetch/genome.ucsc.edu/trash/ct/subtreeAuspice15_genome_8bdf_97bb50.json)
-* [Scotland/CAMC-14DE972/2021](https://nextstrain.org/fetch/genome.ucsc.edu/trash/ct/subtreeAuspice16_genome_8bdf_97bb50.json)
-* [Scotland/QEUH-147E6F5/2021](https://nextstrain.org/fetch/genome.ucsc.edu/trash/ct/subtreeAuspice17_genome_8bdf_97bb50.json)
-* [Scotland/QEUH-13ADEF6/2021](https://nextstrain.org/fetch/genome.ucsc.edu/trash/ct/subtreeAuspice18_genome_8bdf_97bb50.json)
-* [Scotland/QEUH-138F944/2021](https://nextstrain.org/fetch/genome.ucsc.edu/trash/ct/subtreeAuspice19_genome_8bdf_97bb50.json)
-
-The overall UShER report on all sequences is available [here](https://github.com/WCSCourses/ViralBioinfAsia2022/blob/main/course_data/SARS-CoV-2_workflows/UCSC_UShER_Results.pdf)
-
-If you have a set of potentially related sequences you would upload them together into an UShER run and then examine if they are being assigned to the same subtree cluster by UShER - this is similar to what we will be doing next with CIVET.
-
-[Old Link](https://nextstrain.org/fetch/genome.ucsc.edu/trash/ct/subtreeAuspice1_genome_1dd2a_56d490.json)
-
-### 3.2: CIVET
-
-[CIVET](https://github.com/artic-network/civet) stands for **C**luster **I**nvestigation & **V**irus **E**pidemiology **T**ool, its full documentation is available [here](https://cov-lineages.org/resources/civet.html). CIVET was developed to aid SARS-CoV-2 outbreak investigations, it puts new sequences into the context of known background diversity, and can summarise the background diversity based on the users input.
-
-We will using CIVET to investigate a small cluster of 7 hypothetic SARS-CoV-2 sequences. Lets imagine these have all been obtained from a single epidemiological incident such as an outbreak at a school, and we are wanting to examine how related the sequences are to one another and also place them all into the context of the background sequences **available** at the time. All 7 hypothetical sequences are from Scotland and Pangolin assigned them to linage BA.5.3:
-
-* This lineage was simply chosen as an example of a current Omicron lineage with a small number of sequences (89 in total) to ease the burden of running things on the VM
-* May and June 2022 as those were the most recent months (downloaded 7th July 2022)
-* Scotland because the [MRC-University of Glasgow Centre for Virus Research](https://www.gla.ac.uk/research/az/cvr/) is in Scotland
-* Importantly, both the sequence and metadata is publicly available to download from the [COG-UK website](https://www.cogconsortium.uk/priority-areas/data-linkage-analysis/public-data-analysis/).
-* [cov-lineages BA.5.3 link](https://cov-lineages.org/lineage.html?lineage=BA.5.3)
-* [outbreak.info BA.5.3 link](https://outbreak.info/situation-reports?pango=BA.5.3)
-
-Here is a simple phylogenetic tree of all 89 BA.5.3 samples (created using iqtree2), and using the aligned sequences downloaded from the [COG-UK website](https://www.cogconsortium.uk/priority-areas/data-linkage-analysis/public-data-analysis/):
-
-![](https://github.com/WCSCourses/ViralBioinfAsia2022/blob/main/course_data/SARS-CoV-2_workflows/ba53_tree.png)
-
-**Figure 3.2.1:** Phylogenetic tree of Scottish BA.5.3 sequences from May and June 2022. A single BA.3 sequence (Scotland/QEUH-3E1D6AD/2022) is used to the root the tree. 
-
-First lets create a directory to work in
-
-```
-mkdir ~/SARS-CoV-2/Phylo/civet
-```
-
-and then move into in
-
-```
-cd ~/SARS-CoV-2/Phylo/civet
-```
-
-and then download the data using the ```wget``` command:
-
-```
-wget https://tinyurl.com/vgba2022/civet_data.tar
-```
-
-Now untar (unpack) the data
-
-```
-tar -xvf civet_data.tar
-```
-
-If if we list the contents of the directory we should see a **samples.fasta** and **samples_metadata.csv** file, along with a folder called **BA53**.
-
-```
-ls
-```
-
-We have 7 SARS-CoV-2 genome sequences to investigates, these are simply called Sample1-7:
-
-```
-grep ">" samples.fasta
-```
-
-The **samples_metadata.csv** file is a simple comma separate file (csv) with two columns:
-
-1. **name:** the name of the sample - must match the names used in the FASTA file
-2. **sample_date:** the date the sample was taken in YYYY-MM-DD format
-
-This is the minimal metadata needed for CIVET to run. If you were using your own data and don't know the sample date you could simply estimate it. Many additional columns can be added to the metadata file and used for tip labels/colours in the tree: see the [CIVET documentation](https://cov-lineages.org/resources/civet.html) for full details.
-
-The CIVET Conda environment has already been installed on the VM, but as before we first need to activate it when we want to use it:
-
-```
-conda activate civet
-```
-
-There was an issue when we installed civet, so to get things working properley when need to run
-
-```
-chmod 755 ~/miniconda/envs/civet/bin/gofasta
-```
-**NB:** this was raised as an issue on GitHub and should be fixed now if you were to do a fresh intall on your own machine.
-
-To run a CIVET analysis we need:
-
-* background data alignment file: **BA53/ba.5.3_aligned.fasta** 
-* background data metadata: **BA53/ba.5.3_metadata.csv**
-* input sample sequences: **samples.fasta**
-* input sample metadata: **samples_metadata.csv**
-
-To create the CIVET report we need to type this command
-
-```
-civet -i samples_metadata.csv -f samples.fasta -d BA53 -o civet_output
-```
-
-Breaking this command down:
-
-* **civet:** the name of the program
-* **-i samples_metadata.csv**: the input metadata file in csv format
-* **-f samples.fasta**: the input sequence file in FASTA format
-* **-d BA53**: the background data directory - with the background sequence alignment and metadata
-* **-o civet_output**: the name of the folder to create and output the results into
-
-After finishing CIVET should create the output folder and results:
-
-```
-ls civet_output
-```
-
-Let's open up the main CIVET report file:
-
-```
-firefox civet_output/civet.html
-```
-**NB:** You could navigate to the output via the Files browser and double click to open
-
-**CIVET Report Table 1**
-
-This is a summary of the input sequences and their input data along with what **catchment** tree the sequence is contained in - all our samples should be within a single tree called **catchment_1**.
-
-Essentially, CIVET searches through the background sequences and finds all sequences that fall within a customisable SNP distance of each input sequence (I believe the default is 2 down and 2 up i.e. sequences that have all mutations and up to two more, and those that have  up to 2 of the mutations missing). All equally distant targets are included in the catchment. For a given input sequence, if no background sequences are found within the SNP distance cut off, the CIVET algorithm increases the SNP distance in all directions and attempts to get at least one sequence per category (up, down or side). This results in a set of background sequences for each input sequence, and any input sequences with overlapping targets have their catchments merged together.
-
-**CIVET Report Table 2**
-
-This is a table of tall the sequences that passed the CIVET quality control (QC) checks such as minimum length, and maximum N content.
-
-**CIVET Catchments**
-
-The report then contains details of each catchment find - our report only contains a single catchment. First there is a table summary of the catchment including information on the number of input sequences that are assigned to it and the earliest and latest dates of the background sequences in the catchment (from the background metadata file).
-
-One of the main results of the CIVET report is the catchment tree. We can expand the tree to ease visualisation by:
-* Clicking the + symbol on the Tree Option line
-* Sliding the Expansion slider along to expand the gaps between sequences in the tree
-
-You should see a tree like this:
-
-![](https://github.com/WCSCourses/ViralBioinfAsia2022/blob/main/course_data/SARS-CoV-2_workflows/civet_tree.png)
-
-**Figure 3.2.2:** CIVET catchment tree containing all 7 of all hypothetical SARS-CoV-2 input sequences. By default, input sequences are coloured with turquoise circles and sequences from the background data in purple. **NB:** There are NEXUS versions of each catchment tree in the **catchments** subfolder in the civet_output folder.
-
-It is important to emphasise that this type of analysis is not able to infer direct transmission between two samples; even identical sequences may be unrelated as
-SARS-CoV-2 is relatively slow evolving for an RNA virus. Furthermore, the completeness of the background will obviously be an important factor. All our samples form part of the same catchment and are relatively close to one another. Samples 6 and 7 are identical and are a 1 SNP distance from many other samples (e.g.Scotland/LSPA-3E7E789/2022). Sample 5 is identical to the background sequence Scotland/LSPA-3E8210C, whereas sample 1-4 branch of from that, with samples 1 and 2 being identical, and sample 4 having a number of additional mutations.
-
-The nucleotide mutations that each sample contains can be examined and compared using the [snipit](https://github.com/aineniamh/snipit) plot in the CIVET report. As can be seen, Sample 1-4 all contain a T to G mutation at position 3,154 that the other 3 samples do not contain, whilst samples 6 and 7 contain A to G at position 24,595 not seen in the other 5 samples, and sample 4 contains a number of unique mutations:
-
-![](https://github.com/WCSCourses/ViralBioinfAsia2022/blob/main/course_data/SARS-CoV-2_workflows/civet_snipit.png)
-
-**Figure 3.2.3:** snipit plot of the nucleotide mutations contained within each input sequence in the catchment; coloured by base: A (dark blue), C (red), G (light blue), T (green). The x-axis is the genome position the mutation is located, the y-axis are the samples. The grey bar at the bottom represented the SARS-CoV-2 genome and highlights where on the genome each mutation is located.
-
-Once finished, lets deactivate the conda environment:
-
-```
-conda deactivate
-```
-
-### 3.3: SARS-CoV-2 Alignments
-
-Just some quick notes on alignment (not part of this session). Aligning millions of SARS-CoV-2 sequences together can present problems computationally (not least the amount of time takes). Another issue is the large N tracts in sequences which have failed ARTIC amplicons, these can cause numerous issues during alignments resulting in spurious indels and an overall poor alignment. 
-
-Different groups have taken different approaches to solve this. COG-UK uses the [grapevine](https://github.com/COG-UK/grapevine) pipeline which utilises minimap2 to align each read individually against the SARS-CoV-2 reference sequence (similar to aligning each read in a FASTQ read to the reference), insertions are then trimmed and the data is outputted from the BAM file to create a FASTA alignment whose length is the size of original reference sequence; an obvious downside here is that you loose all the insertions from the alignment. This is often combined with aggressive filtering of sequences that are too short and have too many N bases. An alternate tool is NextAlign which is part of [NextClade](https://github.com/nextstrain/nextclade), see the paper here: [https://joss.theoj.org/papers/10.21105/joss.03773]](https://joss.theoj.org/papers/10.21105/joss.03773).
-
-Another approach when using [mafft](https://mafft.cbrc.jp/alignment/software/) is it's inbuilt (but experimental) option to [align all the sequences to a reference sequence]((https://mafft.cbrc.jp/alignment/software/closelyrelatedviralgenomes.html)) to build a full MSA, using options such as ```--6merpair --addfragments```, ```--keeplength``` to preserve the original alignment length (no insertions) and ```--maxambiguous X``` to remove sequences with too many ambiguous characters.
 
 
 ## 4: SARS-CoV-2 Group Practical
