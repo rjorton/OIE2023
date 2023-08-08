@@ -16,7 +16,7 @@ E-mail: Richard.Orton@glasgow.ac.uk
 
 ## Contents
 
-This practical is associated with a lecture on Reference Alignment of High-Throughoput Sequencing (HTS) reads to a reference a sequence.
+This practical is associated with a lecture on Reference Alignment of High-Throughoput Sequencing (HTS) reads to a reference sequence.
 
 * [0: Overview](#0-overview)
 * [1: Setup](#1-setup)
@@ -80,7 +80,7 @@ O = capital letter O
 
 **Make sure you are logged into the alpha2 server with MobaXterm.**
 
-In this session, we will be using a set of Illumina paired end reads which were simulated from a hepatitis c virus (HCV) genome; these simulated reads were created using ART (Huang et al., 2012: [10.1093/bioinformatics/btr708](10.1093/bioinformatics/btr708)). The goal now is to align these reads to a reference genome sequence, with an ultimate goal of creating a consensus sequence for mutation anlysis.
+In this session, we will be working with two sets of Illumina paired end reads which were simulated from a SARS-CoV-2 genome; these simulated reads were created using ART (Huang et al., 2012: [10.1093/bioinformatics/btr708](10.1093/bioinformatics/btr708)). The goal now is to align these reads to a reference genome sequence, with an ultimate goal of creating a consensus sequence for mutation anlysis.
 
 To start off, you will need to copy the data we need for the practical to your home directory. First change directory (cd) to your home directory
 
@@ -94,10 +94,10 @@ Then copy (cp) the data folder (-r for recursive - we want the folder and all it
 cp -r /home4/VBG_data/Richard .
 ```
 
-Then change directory to the HCV data folder
+Then change directory to the Sim1 (Simulated sample 1) data folder
 
 ```
-cd ~/Richard/HCV/
+cd ~/Richard/Sim1/
 ```
 
 Next, list the contents of the directory so you can see the files we will be working with:
@@ -106,24 +106,21 @@ Next, list the contents of the directory so you can see the files we will be wor
 ls
 ```
 
-You should see the FASTQ paired end read files:
+You should see the FASTQ paired-end read files:
 
-**hcv\_sim\_R1.fq**  
-**hcv\_sim\_R2.fq**
+**S1\_R1.fq**  
+**S1\_R2.fq**
 
-And also two FASTA reference sequence files:
+And also a FASTA reference sequence files:
 
-**1b\_hcv\_ref.fasta**  
-**1a\_hcv\_ref.fasta**
+**sars2_ref.fasta**  
 
-We will be aligning the paired end reads to the two reference sequences in turn. The reference sequences represent the 1a and 1b subtypes of HCV, and we will use the alignment results to determine which subtype the sample contains, and to also highlight the importance of selecting an appropriate reference.
- 
 ## 1.1: Basic read statistics
 
 We will first use a tool called prinseq to count the number of reads in each file. As these are paired end reads, there should be one read from each read pair in each file – and hence the same number of reads in each file. We will also use prinseq to output statistics on the read lengths, but prinseq itself can do much much more.
 
 ```
-prinseq-lite.pl -stats_info -stats_len -fastq hcv_sim_R1.fq -fastq2 hcv_sim_R2.fq
+prinseq-lite.pl -stats_info -stats_len -fastq S1_R1.fq -fastq2 S2_R2.fq
 ```
 
 ***Command breakdown:***
@@ -131,8 +128,8 @@ prinseq-lite.pl -stats_info -stats_len -fastq hcv_sim_R1.fq -fastq2 hcv_sim_R2.f
 1.	**prinseq-lite.pl** is the name of the program
 2.	**-stats\_info** tells prinseq to output basic stats on the reads (number of reads and bases)
 3.	**-stats\_len** tells prinseq to output basic stats on read lengths (min, max, mean etc)
-4.	**-fastq hcv\_sim\_R1.fq** the name of the 1st FASTQ file
-5.	**-fastq2 hcv\_sim\_R2.fq** the name of the 2nd FASTQ file in the pair
+4.	**-fastq S1\_R1.fq** the name of the 1st FASTQ file
+5.	**-fastq2 S2\_R2.fq** the name of the 2nd FASTQ file in the pair
 
 ### Common Issue
 * A common issue here is not entering the prinseq command on one line in the terminal - you should only use the enter key at the end of the command to execute it.
@@ -145,7 +142,7 @@ prinseq-lite.pl -stats_info -stats_len -fastq hcv_sim_R1.fq -fastq2 hcv_sim_R2.f
 **Question 2** – What is the average (mean) length of the reads? 
 ***
 
-The statistics are split into those for the first FASTQ file of the read pair (e.g. stats\_info, stats\_len, etc) and those for the second FASTQ file of the read pair (e.g. stats\_info2, stats\_len2, etc), and should look a bit like this:
+The statistics are split into those for the first FASTQ file of the read pair (e.g. stats\_info, stats\_len, etc) and those for the second FASTQ file of the read pair (e.g. stats\_info2, stats\_len2, etc), and should look a bit like this (but with different numbers!):
 
 ```
 stats_info	bases		48000000
@@ -183,10 +180,10 @@ We will be using [BWA](http://bio-bwa.sourceforge.net) to align our paired end r
 First, we need to create a BWA index of the reference sequence. Tools such as BWA need to index the sequence first to create a fast lookup (or index) of short sequence seeds within the reference sequence. This enables the tools to rapidly align millions of reads:
 
 ```
-bwa index 1b_hcv_ref.fasta
+bwa index sars2_ref.fasta
 ```
 
-If you list (ls) the contents of the directory, you should see the BWA index files, they will all have the prefix 1b\_hcv\_ref.fasta, and will have extensions such as **.amb**, **.ann**, **.bwt**, **.pac**, and **.sa**.
+If you list (ls) the contents of the directory, you should see the BWA index files, they will all have the prefix sars2\_ref.fasta, and will have extensions such as **.amb**, **.ann**, **.bwt**, **.pac**, and **.sa**.
 
 ```
 ls
@@ -197,7 +194,7 @@ ls
 Next, we want to align our reads to the reference sequence using the BWA mem algorithm:
 
 ```
-bwa mem -t 4 1b_hcv_ref.fasta hcv_sim_R1.fq hcv_sim_R2.fq > 1b.sam
+bwa mem -t 4 sars2_ref.fasta S1_R1.fq S1_R2.fq > S1.sam
 ```
 
 ***Command breakdown:***
@@ -205,13 +202,13 @@ bwa mem -t 4 1b_hcv_ref.fasta hcv_sim_R1.fq hcv_sim_R2.fq > 1b.sam
 1. **bwa** = the name of the program we are executing
 2. **mem** = the BWA algorithm to use (recommended for illumina reads > 70nt)
 3. **-t 4** = use 4 computer threads
-4. **1b\_hcv\_ref.fasta** = the name (and location) of the reference genome to align to
-5. **hcv\_sim\_R1.fq** = the name of read file 1
-6. **hcv\_sim\_R2.fq** = the name of read file 2
+4. **sars2\_ref.fasta** = the name (and location) of the reference genome to align to
+5. **S1\_R1.fq** = the name of read file 1
+6. **S2\_R2.fq** = the name of read file 2
 7. **>** = direct the output into a file
-8. **1b.sam** = the name of the output SAM file to create 
+8. **S1.sam** = the name of the output SAM file to create 
 
-Overall, this command will create an output file called 1b.sam in the current directory, which contains the results (in SAM format) of aligning all our reads to the reference sequence 1b\_hcv\_ref.fasta.
+Overall, this command will create an output file called S1.sam in the current directory, which contains the results (in SAM format) of aligning all our reads to the reference sequence sars2\_ref.fasta.
 
 When bwa has finished (and your prompt comes back), check that the SAM file has been created.
 
@@ -219,35 +216,35 @@ When bwa has finished (and your prompt comes back), check that the SAM file has 
 ls
 ```
 
-There should now be a file called **1b.sam** in the directory.
+There should now be a file called **S1.sam** in the directory.
 
 ### Common issue
-A common mistake is not waiting for your previous command to finish, and entering the next command into the terminal before the prompt has returned. You need to wait until the **manager@GCV2023** command prompt returns before entering the next command - the bwa alignment can sometimes take a few minutes.
+A common mistake is not waiting for your previous command to finish, and entering the next command into the terminal before the prompt has returned. You need to wait until the **username@alpha2** command prompt returns before entering the next command - the bwa alignment can sometimes take a few minutes.
 
 ## 2.3: Converting SAM to BAM
 
 Typically, a SAM file contains a single line for each read in the data set, and this line stores the alignment result of each read (reference name, alignment location, CIGAR string, the read sequence itself, quality, etc).
 
-SAM files are in a text format (which you can open and view if you like: head 1b.sam), but can take up a lot of disk storage space. It is good practice to convert your SAM files to BAM (Binary Alignment Map) files, which are compressed binary versions of the same data, and can be sorted and indexed easily to make searches faster. We will use [samtools](https://samtools.github.io) to convert our SAM to BAM, and sort and index the BAM file:
+SAM files are in a text format (which you can open and view if you like: head S1.sam), but can take up a lot of disk storage space. It is good practice to convert your SAM files to BAM (Binary Alignment Map) files, which are compressed binary versions of the same data, and can be sorted and indexed easily to make searches faster. We will use [samtools](https://samtools.github.io) to convert our SAM to BAM, and sort and index the BAM file:
 
 ```
-samtools sort 1b.sam -o 1b.bam
+samtools sort S1.sam -o S1.bam
 ```
 
 ```
-samtools index 1b.bam
+samtools index S1.bam
 ```
 
 ***Command breakdown:***
 
-1.	The first command tells samtools to **sort** the SAM file, and to also output (**-o**)the sorted data in BAM format to a file called **1b.bam**
-2.	We then use samtools to **index** the BAM file 1b.bam (indexing [which relies on sorted data] enables faster searches downstream).
+1.	The first command tells samtools to **sort** the SAM file, and to also output (**-o**)the sorted data in BAM format to a file called **S1.bam**
+3.	We then use samtools to **index** the BAM file S1.bam (indexing [which relies on sorted data] enables faster searches downstream).
 
 
 There should now be two new files in the directory called: 
 
-**1b.bam** (the BAM file)  
-**1b.bam.bai** (the BAM index file) 
+**S1.bam** (the BAM file)  
+**S1.bam.bai** (the BAM index file) 
 
 Now let’s list (ls) the contents of the directory to check we have our new files, and also check out their sizes:
 
@@ -267,10 +264,10 @@ ls -lh
 
 **NB:** If your SAM file is 0B (i.e. 0 bytes, empty) then something went wrong with the bwa alignment step, so restart from there. If you SAM file is fine (i.e. >0), but your BAM file is 0B (i.e. empty), then something went wrong with your SAM to BAM conversion so re-do that step. 
 
-We don’t need our original SAM file anymore (as we have the BAM file now) so we remove (rm) the SAM file 1b.sam:
+We don’t need our original SAM file anymore (as we have the BAM file now) so we remove (rm) the SAM file S1.sam:
 
 ```
-rm 1b.sam
+rm S1.sam
 ```
 
 ## 2.4: Basic alignment statistics
@@ -281,30 +278,30 @@ One common thing to check is how many reads have been aligned (or mapped) to the
 
 ### Number of unmapped reads
 ```
-samtools view -c -f4 1b.bam
+samtools view -c -f4 S1.bam
 ```
 
 ***Command breakdown***
 
-1.	**samtools view** = to view the file 1b.bam
+1.	**samtools view** = to view the file S1.bam
 2.	**–c** = count the read alignments
 3.	**–f4** = only include read alignments that do have the unmapped flag 4
 
 ### Number of mapped read alignments:
 ```
-samtools view -c -F4 1b.bam
+samtools view -c -F4 S1.bam
 ```
 
 ***Command breakdown***
 
-1.	**samtools view** = to view the file 1b.bam
+1.	**samtools view** = to view the file S1.bam
 2.	**–c** = count the read alignments
 3.	**–F4** = skip read alignments that contain the unmapped Flag 4 
 
 ***
 ### Questions
 
-**Question 4** – how many reads are mapped to the 1b_hcv_ref.fasta genome?
+**Question 4** – how many reads are mapped to the sars2_ref.fasta genome?
 
 **Question 5** – how many reads are unmapped?
 ***
@@ -316,13 +313,13 @@ So to get the true number of mapped reads you need to count only the alignments 
 ### Number of mapped reads
 
 ```
-samtools view -c -F4 -F256 -F2048 1b.bam
+samtools view -c -F4 -F256 -F2048 S1.bam
 ```
 
 or summing up the F flag values together:
 
 ```
-samtools view -c -F2308 1b.bam
+samtools view -c -F2308 S1.bam
 ```
 
 For small RNA viruses, secondary and supplementary alignments tend to be rare, but it is important to know the distinction between mapped **reads** and mapped read **alignments**.
@@ -353,28 +350,30 @@ The Average Depth (Avg_Depth) is perhaps the most important field, along with Br
 Let’s run weeSAM on our sample:
 
 ```
-weeSAM --bam 1b.bam --html 1b
+weeSAM --bam S1.bam --html S1
 ```
 
 An explanation of this command is:
 
 1.	**weeSAM**: the name of the program we are using
 2.	**--bam**: flag to signify input bam file
-3.	**1b.bam**: the name of our bam file to analyse
+3.	**S1.bam**: the name of our bam file to analyse
 4.	**--html**: flag to signify output html file
-5.	**1b**: the name prefix to use for the output
+5.	**S1**: the name prefix to use for the output
 
-If you list the contents of the directory you should see that a folder called **1b\_html\_results** has been created:
+If you list the contents of the directory you should see that a folder called **S1\_html\_results** has been created:
 
 ```
 ls
 ```
 
-Inside this folder is a HTML file that we can view in a web browser (like Firefox or Chrome), the HTML file has the summary statistics and coverage plot so lets take a look and open the html file: 
+Inside this folder is a HTML file that we can view in a web browser (like Firefox or Chrome), the HTML file has the summary statistics and coverage plot so lets take a look and open the html file.
 
 ```
-firefox 1b_html_results/1b.html
+firefox S1_html_results/S1.html
 ```
+
+***RJO CHECK - will this launch via MobaXterm or should they download?***
 
 You should see something like this:
 
