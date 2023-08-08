@@ -385,7 +385,7 @@ You should see something like this:
 
 ***
 ### Questions
-**Question 9** – what is the average depth of coverage across the SARS-CoV-2 reference genome?
+**Question 6** – what is the average depth of coverage across the SARS-CoV-2 reference genome?
 ***
 
 Now let’s view the coverage plot by clicking on the hyperlink (blue and underlined) in the Ref_Name column, you should see a coverage plot similar to this:
@@ -443,9 +443,9 @@ weeSAM --bam S1.bam --html S1
 ***
 ### Questions
 
-**Question 6** – how many reads are mapped to the sars2_ref.fasta genome for sample Sim2?
+**Question 7** – how many reads are mapped to the sars2_ref.fasta genome for sample Sim2?
 
-**Question 7** – how many reads are unmapped?
+**Question 8** – how many reads are unmapped?
 ***
 
 
