@@ -49,7 +49,7 @@ ls
 Sometimes a command is long and doesn’t fit on a single line on the screen (and screen sizes vary), but it should still be entered as one single line on the computer terminal. 
 
 ```
-bwa mem -t 14 my_reference_file.fasta my_read_file_1.fastq my_read_file_2.fastq > my_output_file.sam
+bwa mem -t 4 my_reference_file.fasta my_read_file_1.fastq my_read_file_2.fastq > my_output_file.sam
 ```
 
 A few Linux tips to remember:
@@ -326,7 +326,6 @@ For small RNA viruses, secondary and supplementary alignments tend to be rare, b
 
 ## 2.5: Coverage plots
 
-
 We previously used samtools to count the number of mapped and unmapped reads (using samtools view -c commands), now let’s explore the read mapping in more detail by creating a coverage plot using a tool called weeSAM: (https://github.com/centre-for-virus-research/weeSAM)[https://github.com/centre-for-virus-research/weeSAM]
 
 weeSAM analyses a SAM or BAM file, generates a graphical coverage plot, and reports a range of summary statistics such as:
@@ -379,69 +378,70 @@ You should see something like this:
 
 ![](https://github.com/WCSCourses/GCV23/blob/main/modules/ReferenceAlignment/1b_weesam_summ.png)
 
+***RJO UPDATE FIGURE***
+
 ***
 ### Questions
-**Question 9** – what is the average depth of coverage across the 1b HCV reference genome?
+**Question 9** – what is the average depth of coverage across the SARS-CoV-2 reference genome?
 ***
 
 Now let’s view the coverage plot by clicking on the hyperlink (blue and underlined) in the Ref_Name column, you should see a coverage plot similar to this:
 
 ![](https://github.com/WCSCourses/GCV23/blob/main/modules/ReferenceAlignment/1b_weesam.png)
 
+***RJO UPDATE FIGURE***
+
 The x-axis represents the genome position, whilst the y-axis represents the Depth of Coverage at each genome position. 
 
-**NB:** The reference sequence filename is 1b_hcv_ref.fasta, but the actual name of the sequence itself is 1|b|EU781827, you can open up the file yourself to check this if you want (head –n1 1b_hcv_ref.fasta).
-
-Although you do expect variation in coverage across the genome, the numerous regions of near zero coverage suggest that the HCV 1b reference is not ideal, and the aligner has struggled to effectively map reads onto it in this regions – presumably because the reference is too divergent from the viral population in the sample at these regions. 
+**NB:** The reference sequence filename is sars2_ref.fasta, but the actual name of the sequence itself is MN908947.fasta, you can open up the file yourself to check this if you want (head –n1 sars2_ref.fasta).
 
 **Close the weeSAM and Firefox windows before proceeding!**
 
+***RJO CHECK - not if not launcged via MobaXterm***
+
 ### Common issue
-A common issue here is due to the fact that we have launched firefox from the terminal (wihtout running it background - see advanced linux commands). In order to get our command prompt back (the manager@GCV2023) we need to close the firefox window down, the prompt should then return.
+A common issue here is due to the fact that we have launched firefox from the terminal (wihtout running it background - see advanced linux commands). In order to get our command prompt back (the username@alpha2) we need to close the firefox window down, the prompt should then return.
 
 
 # 3: Alignment on your own
 
-You now need to use bwa to align the reads to the 1a_hcv_ref.fasta reference sequence – later in the visualisation and summary statistics section we will be comparing the 1a vs 1b alignment results.
+You now need to use bwa to align the reads for the Sim2 samples to the sars2_ref.fasta reference sequence.
 
-You need to work out the commands yourself based on the previous commands for the 1b_hcv_ref.fasta reference. 
+You need to work out the commands yourself based on the previous commands for the Sim1 sample. 
 
-Here is a reminder of the commands you used for 1b HCV which you will need to adapt. 
+Here is a reminder of the commands you used for Sim1 (S1) which you will need to adapt. 
 
-**NB:** Essentially, you will want to change the reference name in the bwa command, and all of the SAM/BAM filenames in the bwa and samtools commands from 1b to 1a.
+**NB:** Essentially, you will want to the input FASTQ filenames and the output files from S1 to S2
+
 
 ```
-bwa index 1b_hcv_ref.fasta
+bwa mem -t 4 sars2_ref.fasta S1_R1.fq S1_R2.fq > S1.sam
 ```
 ```
-bwa mem -t 4 1b_hcv_ref.fasta hcv_sim_R1.fq hcv_sim_R2.fq > 1b.sam
+samtools sort S1.sam -o S1.bam
 ```
 ```
-samtools sort 1b.sam -o 1b.bam
+samtools index S1.bam
 ```
 ```
-samtools index 1b.bam
+rm S1.sam
 ```
 ```
-rm 1b.sam
+samtools view -c -f4 S1.bam
 ```
 ```
-samtools view -c -f4 1b.bam
+samtools view -c -F2308 S1.bam
 ```
 ```
-samtools view -c -F2308 1b.bam
-
-weeSAM --bam 1b.bam --html 1b
+weeSAM --bam S1.bam --html S1
 ```
 
 ***
 ### Questions
 
-**Question 6** – how many reads are mapped to the 1a_hcv_ref.fasta genome?
+**Question 6** – how many reads are mapped to the sars2_ref.fasta genome for sample Sim2/S2?
 
 **Question 7** – how many reads are unmapped?
-
-**Question 8** – which reference assembly has the most mapped reads: 1a\_hcv or 1b\_hcv and which coverage plot looks better? Therefore, which reference sequence is better (1a or 1b)?
 ***
 
 # 4: Extra Data
@@ -803,6 +803,17 @@ As a group you could:
 I would consider this VM a good place to learn BUT not necessarily a good place to conduct 'real' analyses. The reason being is that many of the SARS-CoV-2 tools and datasets are updated very frequently which means many will be out of date on the VM already (many of the tools were installed a few months ago). Tools such as Pangolin and SPEAR do however have good update functions.
 
 
+## Glossary
+
+SAM Fields
+
+SAM Flags
+
+FASTQ Scores
+
+Extract unmapped reads
+
+Remove unmapped reads
 
 
 
