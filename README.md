@@ -28,13 +28,10 @@ This practical is associated with a lecture on Reference Alignment of High-Throu
 	+ [2.4: Basic alignment statistics](#24-basic-alignment-statistics)
  	+ [2.5: Coverage plot](25-coverage-plot)	 
 * [3: Alignment on your own](#3-alignment-on-your-own)
+* [4: Assembly visualisation with Tablet](#4-assembly-visualisation-with-tablet)
+
 * [4: Extra data](#4-extra-data)
-* [5: Assembly Visualisation and Statistics Practical](#5-assembly-visualisation-and-statistics-practical)
-	+ [5.1: Setup](#51-setup)
-	+ [5.2: Summary Statistics with weeSAM](#52-summary-statistics-with-weeSAM)
-	+ [5.3: Coverage plot on your own](#53-coverage-plot-on-your-own)
-	+ [5.4: Visualisation with Tablet](#54-visualisation-with-tablet)
- 
+* [X: Glossary](#4-extra-data)
  
 # 0: Overview
 
@@ -82,13 +79,13 @@ O = capital letter O
 
 In this session, we will be working with two sets of Illumina paired end reads which were simulated from a SARS-CoV-2 genome; these simulated reads were created using ART (Huang et al., 2012: [10.1093/bioinformatics/btr708](10.1093/bioinformatics/btr708)). The goal now is to align these reads to a reference genome sequence, with an ultimate goal of creating a consensus sequence for mutation anlysis.
 
-To start off, you will need to copy the data we need for the practical to your home directory. First change directory (cd) to your home directory
+To start off, you will need to copy the data we need for the practical to your home directory. First change directory (cd) to your home directory:
 
 ```
 cd
 ```
 
-Then copy (cp) the data folder (-r for recursive - we want the folder and all it's contents) to your current directory (which will be your home directory after the above command was entered):
+Then copy (cp) the data folder (-r for recursive as we want the folder and all it's contents) to your current directory (which will be your home directory after the above command was entered):
 
 ```
 cp -r /home4/VBG_data/Richard .
@@ -111,7 +108,13 @@ You should see the FASTQ paired-end read files:
 **S1\_R1.fq**  
 **S1\_R2.fq**
 
-And also a FASTA reference sequence files:
+The reference file that we will be using is located in the Refs folder (~/Richard/Refs):
+
+```
+ls ../Refs
+```
+
+You should see:
 
 **sars2_ref.fasta**  
 
@@ -180,7 +183,7 @@ We will be using [BWA](http://bio-bwa.sourceforge.net) to align our paired end r
 First, we need to create a BWA index of the reference sequence. Tools such as BWA need to index the sequence first to create a fast lookup (or index) of short sequence seeds within the reference sequence. This enables the tools to rapidly align millions of reads:
 
 ```
-bwa index sars2_ref.fasta
+bwa index ../Refs/sars2_ref.fasta
 ```
 
 If you list (ls) the contents of the directory, you should see the BWA index files, they will all have the prefix sars2\_ref.fasta, and will have extensions such as **.amb**, **.ann**, **.bwt**, **.pac**, and **.sa**.
@@ -194,7 +197,7 @@ ls
 Next, we want to align our reads to the reference sequence using the BWA mem algorithm:
 
 ```
-bwa mem -t 4 sars2_ref.fasta S1_R1.fq S1_R2.fq > S1.sam
+bwa mem -t 4 ../Refs/sars2_ref.fasta S1_R1.fq S1_R2.fq > S1.sam
 ```
 
 ***Command breakdown:***
@@ -202,9 +205,9 @@ bwa mem -t 4 sars2_ref.fasta S1_R1.fq S1_R2.fq > S1.sam
 1. **bwa** = the name of the program we are executing
 2. **mem** = the BWA algorithm to use (recommended for illumina reads > 70nt)
 3. **-t 4** = use 4 computer threads
-4. **sars2\_ref.fasta** = the name (and location) of the reference genome to align to
+4. **../Refs/sars2\_ref.fasta** = the name (and location) of the reference genome to align to
 5. **S1\_R1.fq** = the name of read file 1
-6. **S2\_R2.fq** = the name of read file 2
+6. **S1\_R2.fq** = the name of read file 2
 7. **>** = direct the output into a file
 8. **S1.sam** = the name of the output SAM file to create 
 
@@ -372,7 +375,7 @@ Inside this folder is a HTML file that we can view in a web browser (like Firefo
 firefox S1_html_results/S1.html
 ```
 
-***RJO CHECK - will this launch via MobaXterm or should they download?***
+***RJO CHECK - will this launch via MobaXterm or should they download? Is firefox actually installed on alpha2***
 
 You should see something like this:
 
@@ -405,17 +408,18 @@ A common issue here is due to the fact that we have launched firefox from the te
 
 # 3: Alignment on your own
 
-You now need to use bwa to align the reads for the Sim2 samples to the sars2_ref.fasta reference sequence.
-
-You need to work out the commands yourself based on the previous commands for the Sim1 sample. 
-
-Here is a reminder of the commands you used for Sim1 (S1) which you will need to adapt. 
-
-**NB:** Essentially, you will want to the input FASTQ filenames and the output files from S1 to S2
-
+You now need to use bwa to align the reads for the Sim2 samples to the sars2_ref.fasta reference sequence. So lets move into the correct folder:
 
 ```
-bwa mem -t 4 sars2_ref.fasta S1_R1.fq S1_R2.fq > S1.sam
+cd ../Sim2
+```
+
+You need to work out the commands yourself based on the previous commands for the Sim1 sample. Here is a reminder of the commands you used for Sim1 (S1) which you will need to adapt. 
+
+**NB:** Essentially, you will want change the names of your input FASTQ filenames and the output files (e.g. from S1 to S2) in each command
+
+```
+bwa mem -t 4 ../Refs/sars2_ref.fasta S1_R1.fq S1_R2.fq > S1.sam
 ```
 ```
 samtools sort S1.sam -o S1.bam
@@ -439,44 +443,12 @@ weeSAM --bam S1.bam --html S1
 ***
 ### Questions
 
-**Question 6** – how many reads are mapped to the sars2_ref.fasta genome for sample Sim2/S2?
+**Question 6** – how many reads are mapped to the sars2_ref.fasta genome for sample Sim2?
 
 **Question 7** – how many reads are unmapped?
 ***
 
-# 4: Extra Data
 
-If you are looking for something extra to do, there are additional data sets located in the folder:
-
-### ~/Richard/Ebola/
-
-You will find a set of (gzipped) FASTQ paired end read files, and a reference FASTA sequence to align them to.
-
-The reads are from a patient from the ebola epidemic in West Africa 2014 {Gire et al, 2014} [https://www.ncbi.nlm.nih.gov/pubmed/25214632](https://www.ncbi.nlm.nih.gov/pubmed/25214632)
-
-The reference ebola sequence is from a 2007 outbreak in Democratic Republic of Congo. 
-
-Try aligning the reads to the reference yourself.
-
-### ~/Richard/Noisey/
-
-This is a real HCV sample, but the read quality is quite poor making it quite noisey. Again, two HCV ref sequences are supplied (HCV_1a and HCV_1B). Align the paired end reads to each reference and determine what subtype the sample is by comparing mapping and coverage statistics.
-
-### ~/Richard/Mystery/
-
-This is a mystery sample, combine all the given references sequences into one file using the “cat” command, align the reads to that combined reference and then determine what the virus in the sample is.
- 
-# 5: Assembly Visualisation with Tablet
-
-[Tablet](https://ics.hutton.ac.uk/tablet/) is a tool for the visualisation of next generation sequence assemblies and alignments. It goes beyond simple coverage plots, and allows you to scroll across the genome, zoom into errors of interests, highlight mutations to the reference, and investigate the assembly.
-
-Tablet requires three files:
-
-1.	A bam file, e.g. 1a.bam
-2.	A bam index file, e.g. 1a.bam.bai
-3.	A reference sequence file: e.g. 1a\_hcv\_ref.fasta
-
-**Tablet demonstration**
 
 ## 6: Consensus and variant calling
 
@@ -815,6 +787,44 @@ Extract unmapped reads
 
 Remove unmapped reads
 
+Count the number of seqs in a fasta
 
+samtools idxstats
 
+samtools depth
 
+tablet demo
+
+# 4: Extra Data
+
+If you are looking for something extra to do, there are additional data sets located in the folder:
+
+### ~/Richard/Ebola/
+
+You will find a set of (gzipped) FASTQ paired end read files, and a reference FASTA sequence to align them to.
+
+The reads are from a patient from the ebola epidemic in West Africa 2014 {Gire et al, 2014} [https://www.ncbi.nlm.nih.gov/pubmed/25214632](https://www.ncbi.nlm.nih.gov/pubmed/25214632)
+
+The reference ebola sequence is from a 2007 outbreak in Democratic Republic of Congo. 
+
+Try aligning the reads to the reference yourself.
+
+### ~/Richard/Noisey/
+
+This is a real HCV sample, but the read quality is quite poor making it quite noisey. Two HCV ref sequences are supplied (HCV_1a and HCV_1B). Align the paired end reads to each reference and determine what subtype the sample is by comparing mapping and coverage statistics.
+
+### ~/Richard/Mystery/
+
+This is a mystery sample, combine all the given references sequences in the folder into one file using the “cat” command, align the reads to that combined reference (after indexing) and then determine what the virus in the sample is.
+
+# 3: Assembly Visualisation with Tablet
+
+[Tablet](https://ics.hutton.ac.uk/tablet/) is a tool for the visualisation of next generation sequence assemblies and alignments. It goes beyond simple coverage plots, and allows you to scroll across the genome, zoom into errors of interests, highlight mutations to the reference, and investigate the assembly.
+
+Tablet requires three files:
+
+1.	A bam file, e.g. 1a.bam
+2.	A bam index file, e.g. 1a.bam.bai
+3.	Optional: A reference sequence file: e.g. sars2\_ref.fasta
+
+**Tablet demonstration**
