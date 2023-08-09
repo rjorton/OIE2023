@@ -21,6 +21,7 @@ This practical is associated with a lecture on Reference Alignment of High-Throu
 * [0: Overview](#0-overview)
 * [1: Setup](#1-setup)
 	+ [1.1: Basic read statistics](#11-basic-read-statistics)
+	+ [1.2: Read quality control](#12-read-quality-control)
 * [2: Read Alignment](#2-read-alignment)
 	+ [2.1: Indexing the reference sequence](#21-indexing-the-reference-sequence)
 	+ [2.2: Aligning the reads to the reference](#22-aligning-the-reads-to-the-reference)
@@ -176,7 +177,9 @@ stats_len2	stddev		0.00
 
 Paired read files should always have the same number of lines/reads (the ordering of the reads in each file is also critical), so if your two paired files have a different number of reads, something has gone wrong (e.g. filtering/trimming went wrong and corrupted the output, or maybe files from different samples are being used). 
 
-The reads have already been quality filtered and trimmed so we can move on to alignment.
+## 1.2: Read quality control
+
+The reads have already been quality filtered and trimmed so we can move on to alignment (and read QC was covered in a previous session).
  
 # 2: Read Alignment
 
