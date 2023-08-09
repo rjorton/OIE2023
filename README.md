@@ -509,7 +509,7 @@ more S1.fa
 ```
 
 
-## 4.1: Consensus on your own
+## 4.1: Consensus calling on your own
 
 Blah blah
 
@@ -517,7 +517,7 @@ Blah blah
 
 blah blah
 
-## 5.1: Variant on your own
+## 5.1: Variant calling on your own
 
 Blah blah
 
