@@ -29,7 +29,6 @@ This practical is associated with a lecture on Reference Alignment of High-Throu
  	+ [2.5: Coverage plot](25-coverage-plot)	 
 * [3: Alignment on your own](#3-alignment-on-your-own)
 * [4: Assembly visualisation with Tablet](#4-assembly-visualisation-with-tablet)
-
 * [4: Extra data](#4-extra-data)
 * [X: Glossary](#4-extra-data)
  
@@ -171,6 +170,8 @@ stats_len2	stddev		0.00
 ```
 
 Paired read files should always have the same number of lines/reads (the ordering of the reads in each file is also critical), so if your two paired files have a different number of reads, something has gone wrong (e.g. filtering/trimming went wrong and corrupted the output, or maybe files from different samples are being used). 
+
+The reads have already been quality filtered and trimmed so we can move on to alignment.
  
 # 2: Read Alignment
 
@@ -448,180 +449,22 @@ weeSAM --bam S1.bam --html S1
 **Question 8** – how many reads are unmapped?
 ***
 
+## 4: Consensus calling
 
+We have now aigned each of our samples (S1 and S2) to the Wuhan-Hu-1 (MN908947) SARS-CoV-2 reference genome reference sequence, and now we want to call a consensus sequence.
 
-## 6: Consensus and variant calling
+What is a consensus sequence? At each genome position in the SAM/BAM alignment file, call the most frequent nucleotide observed in all of the reads aligned at the position. This includes insertions and deletion (indels).
 
-In this practical, rather than using our previous simulated HCV samples, we will use some real SARS-CoV-2 samples as people are more likely to be familiar with this virus (and it's ORFs and mutations). These samples have already been cleaned, aligned and trimmed to the Wuhan-Hu-1 reference sequence and have indexed BAM files that are ready for consensus and variant calling. 
+In this practical, we will use a tool called [iVar](https://andersen-lab.github.io/ivar/html/manualpage.html) to call the consensus sequence, which utilises the [mpileup](http://www.htslib.org/doc/samtools-mpileup.html) function of samtools.
 
-### 6.1: Setup and data
-
-First, lets move into the SARS2 data directory:
-
-```
-cd ~/Richard/SARS2
-```
-
-If you list the contents of this directory you will see
-In this session, we will be working on some more Illumina paired end read data. The FASTQ data was downloaded from the [European Nucleotide Archive](https://www.ebi.ac.uk/ena/browser) (ENA), and there are 4 samples in total (the samples are not related to one another), with R1 and R2 FASTQ files for each:
-
-* ERR9105817 - ARTIC primer version 4.1
-* ERR9731990 - ARTIC primer version 4.1
-* ERR9761275 - ARTIC primer version 4.1
-* ERR9788433 - ARTIC primer version 4.1
-
-The primer scheme to use is:
+First, let work on sample Sim1, so we need to change directory (cd) into the correct folder:
 
 ```
-~/artic-ncov2019/primer_schemes/nCoV-2019/V4.1/SARS-CoV-2.scheme.bed
+cd ~/Richard/Sim1
 ```
 
-Your task is to work as a group in the breakout rooms to analyse these samples. Initial read QC (with trim_galore) is not required (but you could add it if you wanted).  You should:
-
-* align the reads to the Wuhan-Hu-1 reference sequence
-* Report the number of mapped reads
-* Trim the ARTIC primers
-* Call a consensus sequence
-* Use Pangolin to assign a lineage
-* Use SPEAR to call the mutations
-
-This is a flexible session, and a chance to collate all the steps that you have learnt onto a single sample(s).
-
-As a group you could:
-
-* Analyse a sample each and collate the results. As there are only 4 samples (and groups will likely be larger than 4) - multiple people could analyse a single sample and check you get the same results
-* Write a bash script to process the sample automatically. Remember all the steps to analyse a sample are the same, it is just the input/output names that are changing. Completed example bash scripts will be uploaded here after the session.
-
-The data in this folder is from a run on an Illumina MiSeq machine. The name of the folder implies it was run on the 3rd July 2020 (200703), the machine ID is M01569, the run ID is 0148_000000000-J53HN, and this was called Batch70 locally within the [Medical Research Council-University of Glasgow Centre for Virus Research](https://www.gla.ac.uk/research/az/cvr/) (CVR) as part of a Covid-19 Genomics UK Consortium ([COG-UK](https://www.cogconsortium.uk)) sequencing run. The samples were sequenced using Version 1 (V1) of the ARTIC [nCoV-2019](https://github.com/artic-network/primer-schemes/tree/master/nCoV-2019) amplicon primers.
-
-There are four samples in this run called:
-
-* CVR2058
-* CVR2078
-* CVR2092
-* CVR2101
-
-If you list the contents of the directory you should see paired end reads (R1.fastq and R2.fastq) for each of the four samples:
-
 ```
-ls
-```
-
-These samples have already been trimmed/filtered using [trim_galore](https://www.bioinformatics.babraham.ac.uk/projects/trim_galore/), so we do not need to QC them. For information, this is command that was used for each sample:
-
-```
-#DO NOT ENTER THE BELOW COMMAND- IT IS JUST FOR INFORMATION 
-trim_galore -q 20 --length 50 --paired SAMPLE_R1.fastq SAMPLE_R2.fastq
-```
-### 1.2.2: Illumina consensus generation walkthrough
-
-We will be using the [Wuhan-Hu-1](https://www.ncbi.nlm.nih.gov/nuccore/MN908947) SARS-CoV-2 isolate as the reference sequence, which has the GenBank accession number [MN908947](https://www.ncbi.nlm.nih.gov/nuccore/MN908947); this is also the sequence used as the basis for the SARS-CoV-2 RefSeq sequence [NC_045512](https://www.ncbi.nlm.nih.gov/nuccore/NC_045512). We will use [bwa](https://github.com/lh3/bwa) to align our reads to the reference.
-
-First we need to index the reference sequence that we will be aligning our reads to. Indexing enables the aligner to quickly look up the best places to start aligning a read by using small sequences call 'seeds' from within the read and looking up if and where those seeds occur in the reference genome using the index.
-
-```
-bwa index ~/SARS-CoV-2/MN908947.fasta 
-```
-
-This should of created a range of bwa index files (MN908947.fasta.amb/.ann/.bwt/.pac/.sa files), so list (```ls```) the contents of the directory to check:
-
-```
-ls ~/SARS-CoV-2/
-```
-
-You only need to index a genome once, if you are aligning many samples to the same genome sequence (as we will be on this course) you do not need to re-run the reference index step; but don't confuse this step with the BAM indexing step which does need to be done for each sample.
-
-Now we will align the reads from sample CVR2058 to the reference sequence using bwa:
-
-
-```
-bwa mem -t4 ~/SARS-CoV-2/MN908947.fasta CVR2058_R1.fastq CVR2058_R2.fastq > CVR2058.sam
-
-```
-Breaking this command down:
-
-* **bwa** = the name of the program
-* **mem** = the name of the bwa algorithm to use (it is recommended for reads > 70bp)
-* **-t4** = use 4 computational threads
-* **~/SARS-CoV-2/MN908947.fasta** = the path to the reference file (and index)
-* **CVR2058_R1.fastq** = FASTQ read pair 1
-* **CVR2058_R2.fastq** = FASTQ read pair 2
-* **> CVR2058.sam** = direct the output into the file CVR2058.sam rather than to the command line
-
-We now have a SAM file, which we immediately convert into a BAM file as they are compressed and faster to work with downstream. We can sort the file at the same time as converting it:
-
-
-```
-samtools sort -@4 CVR2058.sam -o CVR2058.bam
-```
-Breaking this command down:
-
-* **samtools** = the name of the program
-* **sort** = the name of the function within samtools to use
-* **-@4** = use 4 threads
-* **CVR2058.sam** = the input file
-* **-o CVR2058.bam** =  the output file
-
-We no longer need the SAM file so can delete (```rm```) it:
-
-```
-rm CVR2058.sam 
-
-```
-Now we need to index the BAM file, this makes downstream analyses faster and many downstream tools will only work if the index file has been created:
-
-```
-samtools index CVR2058.bam
-```
-
-If we list the contents of the directory we should see the index file with a .bai extension has been created:
-
-```
-ls
-```
-
-
-As we have used ARTIC amplicons, each read will typically start and end with a primer sequence. The primer sequence does not come from the sample's viral genome (and the primer may actually be slightly different to the virus) so all primer sequences should be removed from the read ends so they don't interfere with consensus and variant calling. 
-
-To do this we use a tool called [ivar](https://andersen-lab.github.io/ivar/html/manualpage.html) which requires a [BED](https://software.broadinstitute.org/software/igv/BED) file containing the primer coordinates on the reference genome:
-
-```
-ivar trim -i CVR2058.bam -b ~/artic-ncov2019/primer_schemes/nCoV-2019/V1/nCoV-2019.bed -p CVR2058_trim.bam
-```
-**NB:** Use **TAB Completion** to help enter the -b primer bed file!
-
-Breaking this command down:
-
-* **ivar** = the name of the program
-* **trim** = the name of the function within ivar to use (trimming primers)
-* **-i CVR2058.bam** = the name of the input BAM fie (it is in the current directory)
-* **-b ~/artic-ncov2019/primer_schemes/nCoV-2019/V1/nCoV-2019.bed** = the path to primer BED file
-* **-p CVR2058_trim.bam** = the name of the output file to create (which will be a primer trimmed version of the input BAM file)
-
-For those who are interested ivar works by soft clipping the primer sequences from the read alignments in the BAM file (rather than actually trimming the reads sequences) based on the alignment coordinates. Soft clipping is a form of trimming that is embedded within the CIGAR string of a read alignment. The CIGAR string is the 6th field of the SAM/BAM file, if you were to examine the BAM file manually you should see lots of 'S' characters in the CIGAR field: see the [CIGAR specification](https://samtools.github.io/hts-specs/SAMv1.pdf) for more information.
-
-We now need to sort and then index this BAM file. Sort:
-
-```
-samtools sort -@4 CVR2058_trim.bam -o CVR2058_trim_sort.bam 
-```
-
-Rename the file back to CVR2058\_trim.bam as we don't need the unsorted BAM file:
-
-```
-mv CVR2058_trim_sort.bam CVR2058_trim.bam
-```
-
-Index the BAM:
-
-```
-samtools index CVR2058_trim.bam
-```
-
-We now have a sorted and indexed BAM file (CVR2058\_trim.bam) that contains our sample's paired end reads (CVR2058\_R1.fastq CVR2058\_R2.fastq) aligned to the Wuhan-Hu-1 (MN908947) reference genome, with the amplicon primer sequences clipped off. So we are now ready to call a consensus sequence:
-
-```
-samtools mpileup -aa -A -d 0 -Q 0 CVR2058_trim.bam | ivar consensus -p CVR0258 -t 0.4
+samtools mpileup -aa -A -d 0 -Q 0 S1.bam | ivar consensus -p S1 -t 0.4
 ```
 
 Breaking this command down, there are two parts:
@@ -632,7 +475,7 @@ Breaking this command down, there are two parts:
 	* **-d 0** = override the maximum depth (default is 8000 which is typically too low for viruses)
 	* **-Q 0** = minimum base quality, 0 essentially means all the data
 2. ivar [consensus](https://andersen-lab.github.io/ivar/html/manualpage.html) - this calls the consensus - the output of the samtools mpileup command is piped '|' directly into ivar
-	* -p CVR2058 = prefix with which to name the output file
+	* -p S1 = prefix with which to name the output file
 	* -t 0.4 = the minimum frequency threshold that a base must match to be used in calling the consensus base at a position. In this case, an ambiguity code will be used if more than one base is > 40% (0.4). See [ivar manual]
 
 By default, ivar consensus uses a minimum depth (-m) of 10 and a minimum base quality (-q) of 20 to call the consensus; these defaults can be changed by using the appropriate arguments. If a genome position has a depth less than the minimum, an 'N' base will be used in the consensus sequence by default.
@@ -640,24 +483,25 @@ By default, ivar consensus uses a minimum depth (-m) of 10 and a minimum base qu
 ivar will output some basic statistics to the screen such as:
 
 ```
-#DO NOT ENTER THIS - IT IS THE IVAR OUTPUT YOU SHOULD SEE
+#DO NOT ENTER THIS - IT IS AN EXAMPLE OF AN IVAR OUTPUT:
 Reference length: 29903
 Positions with 0 depth: 121
 Positions with depth below 10: 121
 ```
-and you should see our consensus sequence (CVR0258.fa) in the directory:
+
+and when it has finished (and your prompt returns) you should see our consensus sequence (S1.fa) in the directory:
 
 ```
 ls
 ```
 
-which you can view via the command line (again, we will be doing variants in later sessions):
+which you can view the sequence via the command line (we will be covering variants later):
 
 ```
-more CVR0258.fa 
+more S1.fa 
 ```
 
-### 1.2.3: Exercise: Generating Illumina consensus sequences yourself
+### 4.1: Exercise: Generating Illumina consensus sequences yourself
 
 There are three other samples in the Illumina data directory:
 
@@ -794,6 +638,10 @@ samtools idxstats
 samtools depth
 
 tablet demo
+
+ivar trim
+
+BED files
 
 # 4: Extra Data
 
