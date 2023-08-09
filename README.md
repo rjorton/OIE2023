@@ -26,15 +26,16 @@ This practical is associated with a lecture on Reference Alignment of High-Throu
 	+ [2.2: Aligning the reads to the reference](#22-aligning-the-reads-to-the-reference)
 	+ [2.3: Converting SAM to BAM](#23-converting-SAM-to-BAM)
 	+ [2.4: Basic alignment statistics](#24-basic-alignment-statistics)
- 	+ [2.5: Coverage plot](25-coverage-plot)	 
+ 	+ [2.5: Coverage plot](25-coverage-plots)	 
 * [3: Alignment on your own](#3-alignment-on-your-own)
 * [4: Consensus calling](#4-consensus-calling)
- 	+ [4.1: Consensus on your ownt](41-consensus-on-your-own)
+ 	+ [4.1: Consensus on your own](41-consensus-on-your-own)
 * [5: Variant calling](#5-variant-calling)
- 	+ [5.1: Variant calling on your ownt](51-variant-calling-on-your-own)
+ 	+ [5.1: Variant calling on your own](51-variant-calling-on-your-own)
 * [6: Extra data](#6-extra-data)
 * [7: Assembly visualisation with tablet](#7-assembly-visualisation-with-tablet)
 * [8: Glossary](#8-glossary)
+* [9: Bash script example](#9-bash-script-example)
  
 # 0: Overview
 
