@@ -28,9 +28,13 @@ This practical is associated with a lecture on Reference Alignment of High-Throu
 	+ [2.4: Basic alignment statistics](#24-basic-alignment-statistics)
  	+ [2.5: Coverage plot](25-coverage-plot)	 
 * [3: Alignment on your own](#3-alignment-on-your-own)
-* [4: Assembly visualisation with Tablet](#4-assembly-visualisation-with-tablet)
-* [4: Extra data](#4-extra-data)
-* [X: Glossary](#4-extra-data)
+* [4: Consensus calling](#4-consensus-calling)
+ 	+ [4.1: Consensus on your ownt](41-consensus-on-your-own)
+* [5: Variant calling](#5-variant-calling)
+ 	+ [5.1: Variant calling on your ownt](51-variant-calling-on-your-own)
+* [6: Extra data](#6-extra-data)
+* [7: Assembly visualisation with tablet](#7-assembly-visualisation-with-tablet)
+* [8: Glossary](#8-glossary)
  
 # 0: Overview
 
@@ -449,7 +453,7 @@ weeSAM --bam S1.bam --html S1
 **Question 8** – how many reads are unmapped?
 ***
 
-## 4: Consensus calling
+# 4: Consensus calling
 
 We have now aigned each of our samples (S1 and S2) to the Wuhan-Hu-1 (MN908947) SARS-CoV-2 reference genome reference sequence, and now we want to call a consensus sequence.
 
@@ -462,6 +466,8 @@ First, let work on sample Sim1, so we need to change directory (cd) into the cor
 ```
 cd ~/Richard/Sim1
 ```
+
+And now call the consenus for the sample:
 
 ```
 samtools mpileup -aa -A -d 0 -Q 0 S1.bam | ivar consensus -p S1 -t 0.4
@@ -501,125 +507,54 @@ which you can view the sequence via the command line (we will be covering varian
 more S1.fa 
 ```
 
-### 4.1: Exercise: Generating Illumina consensus sequences yourself
 
-There are three other samples in the Illumina data directory:
+## 4.1: Consensus on your own
 
-* CVR2078
-* CVR2092
-* CVR2101
+Blah blah
 
-You should now choose atleast one sample to create a consensus sequence for yourself by running through the above steps, but adapting them for the next sample (you simply need to change the input read names, and the output file names from CVR2058 to your next sample name). A reminder that the commands used were:
+# 5: Variant calling
 
-```
-bwa mem -t4 ~/SARS-CoV-2/MN908947.fasta CVR2058_R1.fastq CVR2058_R2.fastq > CVR2058.sam
-```
+blah blah
 
-```
-samtools sort -@4 CVR2058.sam -o CVR2058.bam
-```
+## 5.1: Variant on your own
 
-```
-rm CVR2058.sam 
-```
+Blah blah
 
-```
-samtools index CVR2058.bam
-```
+# 6: Extra Data
 
-```
-ivar trim -i CVR2058.bam -b ~/artic-ncov2019/primer_schemes/nCoV-2019/V1/nCoV-2019.bed -p CVR2058_trim.bam
-```
+If you are looking for something extra to do, there are additional data sets located in the folder:
 
-```
-samtools sort -@4 CVR2058_trim.bam -o CVR2058_trim_sort.bam 
-```
+### ~/Richard/Ebola/
 
-```
-mv CVR2058_trim_sort.bam CVR2058_trim.bam
-```
+You will find a set of (gzipped) FASTQ paired end read files, and a reference FASTA sequence to align them to.
 
-```
-samtools index CVR2058_trim.bam
-```
+The reads are from a patient from the ebola epidemic in West Africa 2014 {Gire et al, 2014} [https://www.ncbi.nlm.nih.gov/pubmed/25214632](https://www.ncbi.nlm.nih.gov/pubmed/25214632)
 
-```
-samtools mpileup -aa -A -d 0 -Q 0 CVR2058_trim.bam | ivar consensus -p CVR0258 -t 0.4
-```
+The reference ebola sequence is from a 2007 outbreak in Democratic Republic of Congo. 
 
-**QUESTION** - what is number of mapped reads in each of the samples you have looked at? Hint:
+Try aligning the reads to the reference yourself.
 
-```
-samtools view -c -F2308 input.bam
-```
+### ~/Richard/Noisey/
 
-Overall, you should again see that we are simply running the same set of commands over and over again for different samples but just changing the input and output names. This is where the power of simple bash scripting and bioinformatics pipelines come into play, as relatively simple scripts can be written to automate this process.
+This is a real HCV sample, but the read quality is quite poor making it quite noisey. Two HCV ref sequences are supplied (HCV_1a and HCV_1B). Align the paired end reads to each reference and determine what subtype the sample is by comparing mapping and coverage statistics.
 
-### 1.2.4: Non-amplicon Illumina samples
+### ~/Richard/Mystery/
 
-If the sample was shotgun rather than amplicons, simply omit the ivar trim (and subsequent BAM manipultion) steps:
+This is a mystery sample, combine all the given references sequences in the folder into one file using the “cat” command, align the reads to that combined reference (after indexing) and then determine what the virus in the sample is.
 
+# 7: Assembly Visualisation with Tablet
 
-```
-bwa mem -t4 ~/SARS-CoV-2/MN908947.fasta CVR2058_R1.fastq CVR2058_R2.fastq > CVR2058.sam
-```
+[Tablet](https://ics.hutton.ac.uk/tablet/) is a tool for the visualisation of next generation sequence assemblies and alignments. It goes beyond simple coverage plots, and allows you to scroll across the genome, zoom into errors of interests, highlight mutations to the reference, and investigate the assembly.
 
-```
-samtools sort -@4 CVR2058.sam -o CVR2058.bam
-```
+Tablet requires three files:
 
-```
-rm CVR2058.sam 
-```
+1.	A bam file, e.g. 1a.bam
+2.	A bam index file, e.g. 1a.bam.bai
+3.	Optional: A reference sequence file: e.g. sars2\_ref.fasta
 
-```
-samtools index CVR2058.bam
-```
+**Tablet demonstration**
 
-```
-samtools mpileup -aa -A -d 0 -Q 0 CVR2058.bam | ivar consensus -p CVR0258 -t 0.4
-```
-
-
-
-## 4: SARS-CoV-2 Group Practical
-
-In this session, we will be working on some more Illumina paired end read data. The FASTQ data was downloaded from the [European Nucleotide Archive](https://www.ebi.ac.uk/ena/browser) (ENA), and there are 4 samples in total (the samples are not related to one another), with R1 and R2 FASTQ files for each:
-
-* ERR9105817 - ARTIC primer version 4.1
-* ERR9731990 - ARTIC primer version 4.1
-* ERR9761275 - ARTIC primer version 4.1
-* ERR9788433 - ARTIC primer version 4.1
-
-The primer scheme to use is:
-
-```
-~/artic-ncov2019/primer_schemes/nCoV-2019/V4.1/SARS-CoV-2.scheme.bed
-```
-
-Your task is to work as a group in the breakout rooms to analyse these samples. Initial read QC (with trim_galore) is not required (but you could add it if you wanted).  You should:
-
-* align the reads to the Wuhan-Hu-1 reference sequence
-* Report the number of mapped reads
-* Trim the ARTIC primers
-* Call a consensus sequence
-* Use Pangolin to assign a lineage
-* Use SPEAR to call the mutations
-
-This is a flexible session, and a chance to collate all the steps that you have learnt onto a single sample(s).
-
-As a group you could:
-
-* Analyse a sample each and collate the results. As there are only 4 samples (and groups will likely be larger than 4) - multiple people could analyse a single sample and check you get the same results
-* Write a bash script to process the sample automatically. Remember all the steps to analyse a sample are the same, it is just the input/output names that are changing. Completed example bash scripts will be uploaded here after the session.
-
-
-## 5: Warnings
-
-I would consider this VM a good place to learn BUT not necessarily a good place to conduct 'real' analyses. The reason being is that many of the SARS-CoV-2 tools and datasets are updated very frequently which means many will be out of date on the VM already (many of the tools were installed a few months ago). Tools such as Pangolin and SPEAR do however have good update functions.
-
-
-## Glossary
+# 8: Glossary
 
 SAM Fields
 
@@ -643,36 +578,3 @@ ivar trim
 
 BED files
 
-# 4: Extra Data
-
-If you are looking for something extra to do, there are additional data sets located in the folder:
-
-### ~/Richard/Ebola/
-
-You will find a set of (gzipped) FASTQ paired end read files, and a reference FASTA sequence to align them to.
-
-The reads are from a patient from the ebola epidemic in West Africa 2014 {Gire et al, 2014} [https://www.ncbi.nlm.nih.gov/pubmed/25214632](https://www.ncbi.nlm.nih.gov/pubmed/25214632)
-
-The reference ebola sequence is from a 2007 outbreak in Democratic Republic of Congo. 
-
-Try aligning the reads to the reference yourself.
-
-### ~/Richard/Noisey/
-
-This is a real HCV sample, but the read quality is quite poor making it quite noisey. Two HCV ref sequences are supplied (HCV_1a and HCV_1B). Align the paired end reads to each reference and determine what subtype the sample is by comparing mapping and coverage statistics.
-
-### ~/Richard/Mystery/
-
-This is a mystery sample, combine all the given references sequences in the folder into one file using the “cat” command, align the reads to that combined reference (after indexing) and then determine what the virus in the sample is.
-
-# 3: Assembly Visualisation with Tablet
-
-[Tablet](https://ics.hutton.ac.uk/tablet/) is a tool for the visualisation of next generation sequence assemblies and alignments. It goes beyond simple coverage plots, and allows you to scroll across the genome, zoom into errors of interests, highlight mutations to the reference, and investigate the assembly.
-
-Tablet requires three files:
-
-1.	A bam file, e.g. 1a.bam
-2.	A bam index file, e.g. 1a.bam.bai
-3.	Optional: A reference sequence file: e.g. sars2\_ref.fasta
-
-**Tablet demonstration**
