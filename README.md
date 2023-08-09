@@ -582,3 +582,5 @@ ivar trim
 
 BED files
 
+SNPeff add
+
