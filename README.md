@@ -388,7 +388,7 @@ firefox S1_html_results/S1.html
 
 You should see something like this:
 
-![](https://github.com/WCSCourses/GCV23/blob/main/modules/ReferenceAlignment/1b_weesam_summ.png)
+![](https://github.com/rjorton/OIE2023/blob/main/weeSAM_table.png)
 
 ***RJO UPDATE FIGURE***
 
@@ -399,17 +399,13 @@ You should see something like this:
 
 Now let’s view the coverage plot by clicking on the hyperlink (blue and underlined) in the Ref_Name column, you should see a coverage plot similar to this:
 
-![](https://github.com/WCSCourses/GCV23/blob/main/modules/ReferenceAlignment/1b_weesam.png)
-
-***RJO UPDATE FIGURE***
+![](https://github.com/rjorton/OIE2023/blob/main/weeSAM_fig.png)
 
 The x-axis represents the genome position, whilst the y-axis represents the Depth of Coverage at each genome position. 
 
-**NB:** The reference sequence filename is sars2_ref.fasta, but the actual name of the sequence itself is MN908947.fasta, you can open up the file yourself to check this if you want (head –n1 sars2_ref.fasta).
+**NB:** The reference sequence filename is sars2_ref.fasta, but the actual name of the sequence itself is MN908947 in the fasta file, you can open up the file yourself to check this if you want (head –n1 sars2_ref.fasta).
 
-**Close the weeSAM and Firefox windows before proceeding!**
-
-***RJO CHECK - not if not launcged via MobaXterm***
+**Close the weeSAM/Firefox windows before proceeding!**
 
 ### Common issue
 A common issue here is due to the fact that we have launched firefox from the terminal (wihtout running it background - see advanced linux commands). In order to get our command prompt back (the username@alpha2) we need to close the firefox window down, the prompt should then return.
@@ -420,12 +416,16 @@ A common issue here is due to the fact that we have launched firefox from the te
 You now need to use bwa to align the reads for the Sim2 samples to the sars2_ref.fasta reference sequence. So lets move into the correct folder:
 
 ```
-cd ../Sim2
+cd ../Sample2
 ```
 
 You need to work out the commands yourself based on the previous commands for the Sim1 sample. Here is a reminder of the commands you used for Sim1 (S1) which you will need to adapt. 
 
 **NB:** Essentially, you will want change the names of your input FASTQ filenames and the output files (e.g. from S1 to S2) in each command
+
+```
+prinseq-lite.pl -stats_info -stats_len -fastq S1_R1.fq -fastq2 S1_R2.fq
+```
 
 ```
 bwa mem -t 4 ../Refs/sars2_ref.fasta S1_R1.fq S1_R2.fq > S1.sam
@@ -452,7 +452,7 @@ weeSAM --bam S1.bam --html S1
 ***
 ### Questions
 
-**Question 7** – how many reads are mapped to the sars2_ref.fasta genome for sample Sim2?
+**Question 7** – how many reads are in the original FASTQ files and how manu reads are mapped to the sars2_ref.fasta genome for sample Sim2?
 
 **Question 8** – how many reads are unmapped?
 ***
@@ -465,13 +465,19 @@ What is a consensus sequence? At each genome position in the SAM/BAM alignment f
 
 In this practical, we will use a tool called [iVar](https://andersen-lab.github.io/ivar/html/manualpage.html) to call the consensus sequence, which utilises the [mpileup](http://www.htslib.org/doc/samtools-mpileup.html) function of samtools.
 
-First, let work on sample Sim1, so we need to change directory (cd) into the correct folder:
+**NB:** the server we are using (alpha2) has a conflict/error when running ivar by default, to resolve it please COPY and PASTE the below command into your terminal window and hit the enter button:
 
 ```
-cd ~/Richard/Sim1
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/software/htslib-v1.12/lib
 ```
 
-And now call the consenus for the sample:
+First, let work on sample Sample1, so we need to change directory (cd) into the correct folder:
+
+```
+cd ~/Richard/Sample1
+```
+
+And now call the consenus for the sample using ivar:
 
 ```
 samtools mpileup -aa -A -d 0 -Q 0 S1.bam | ivar consensus -p S1 -t 0.4
