@@ -2,7 +2,7 @@
 ## [6th Viral Bioinformatics and Genomics Training Course](https://github.com/centre-for-virus-research/CVR-VBG-2023)
 * Monday 21st - Friday 25th August 2023
 * Glasgow, UK
-* [Medical Research Council - University of Glasgow Centre for Virus Research](https://www.gla.ac.uk/research/az/cvr/)
+* [MRC-University of Glasgow Centre for Virus Research](https://www.gla.ac.uk/research/az/cvr/)
 
 ## Contact
 
@@ -96,10 +96,10 @@ Then copy (cp) the data folder (-r for recursive as we want the folder and all i
 cp -r /home4/VBG_data/Richard .
 ```
 
-Then change directory to the Sim1 (Simulated sample 1) data folder
+Then change directory to the Sample1 data folder
 
 ```
-cd ~/Richard/Sim1/
+cd ~/Richard/Sample1/
 ```
 
 Next, list the contents of the directory so you can see the files we will be working with:
@@ -128,7 +128,7 @@ You should see:
 We will first use a tool called prinseq to count the number of reads in each file. As these are paired end reads, there should be one read from each read pair in each file – and hence the same number of reads in each file. We will also use prinseq to output statistics on the read lengths, but prinseq itself can do much much more.
 
 ```
-prinseq-lite.pl -stats_info -stats_len -fastq S1_R1.fq -fastq2 S2_R2.fq
+prinseq-lite.pl -stats_info -stats_len -fastq S1_R1.fq -fastq2 S1_R2.fq
 ```
 
 ***Command breakdown:***
@@ -195,10 +195,10 @@ First, we need to create a BWA index of the reference sequence. Tools such as BW
 bwa index ../Refs/sars2_ref.fasta
 ```
 
-If you list (ls) the contents of the directory, you should see the BWA index files, they will all have the prefix sars2\_ref.fasta, and will have extensions such as **.amb**, **.ann**, **.bwt**, **.pac**, and **.sa**.
+If you list (ls) the contents of the Refs directory, you should see the BWA index files, they will all have the prefix sars2\_ref.fasta, and will have extensions such as **.amb**, **.ann**, **.bwt**, **.pac**, and **.sa**.
 
 ```
-ls
+ls ../Refs/
 ```
 
 ## 2.2: Aligning the reads to the reference
@@ -313,7 +313,7 @@ samtools view -c -F4 S1.bam
 ***
 ### Questions
 
-**Question 4** – how many reads are mapped to the sars2_ref.fasta genome?
+**Question 4** – how many reads are mapped to the sars2_ref.fasta genome? 
 
 **Question 5** – how many reads are unmapped?
 ***
@@ -384,7 +384,7 @@ Inside this folder is a HTML file that we can view in a web browser (like Firefo
 firefox S1_html_results/S1.html
 ```
 
-***RJO CHECK - will this launch via MobaXterm or should they download? Is firefox actually installed on alpha2***
+***RJO CHECK IN COMPUTER ROOM - will this launch via MobaXterm or should they download locally?***
 
 You should see something like this:
 
