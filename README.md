@@ -521,6 +521,7 @@ which you can view the sequence via the command line (we will be covering varian
 more S1.fa 
 ```
 
+**Question 9** - try copying and pasting the created consensus sequence into [NCBI Blast](https://blast.ncbi.nlm.nih.gov/Blast.cgi) - what is the closest sample on GenBank?
 
 ## 4.1: Consensus calling on your own
 
@@ -528,11 +529,93 @@ You now need to call the consensus sequence for Sample2, so you'll need to chang
 
 # 5: Variant calling
 
-blah blah
+Viruses, and in particular RNA viruses, can exist as complex populations consisting of numerous variants present at a spectrum of frequencies – the so called viral quasispecies. Although we have created a consensus sequence (which typically considers mutations at a frequency >50% in the sample) using iVar, we do not yet know anything about the mutations within the sample. Furthermore, it is often necessary to go beyond the consensus, and investigate the spectrum of low frequency mutations present in the sample.
+
+iVar itself could be used to call variants (using the [iVar variants](https://andersen-lab.github.io/ivar/html/manualpage.html) command). But here we will be using a slightly more advanced variant caller called [LoFreq](https://github.com/CSB5/lofreq) to call the low (and high) frequency variants present in the sample BAM file. LoFreq uses numerous statistical methods and tests to attempt to distinguish true low frequency viral variants from sequence errors. It requires a sample BAM file and corresponding reference sequence that it was aligned to, and creates a [VCF](https://samtools.github.io/hts-specs/VCFv4.2.pdf) file as an output.
+
+First, lets make sure we are in the correct folder to work on Sample1:
+
+```
+cd ~/Richard/Sample1
+```
+
+To use LoFreq enter this command:
+
+```
+/software/lofreq_star-v2.1.2/bin/lofreq call -f ../Refs/sars2_ref.fasta -o S1.vcf S1.bam
+```
+
+Breaking this command down:
+
+* **/software/lofreq_star-v2.1.2/bin/lofreq**: the name (and path on alpha2) of the program we are using
+* **call**: the name of the function within LoFreq we are using – call variants
+* **-f**: ../Refs/sars2_ref.fasta: the reference file name and location (path)
+* **-o S1.vcf**: the output VCF file name to create
+* **sars2**.bam: the input BAM file name
+
+Now lets open the VCF file created by LoFreq:
+
+```
+more sars2.vcf
+```
+
+The outputted VCF file consists of the following fields:
+
+* CHROM: the chromosome – in this case the SARS2 ref sequence NC_045512.2
+* POS: the position on the chromosome the variant is at
+* ID: a ‘.’ but LoFreq can be run with a database of known variants to annotate this field
+* REF: the reference base at this position
+* ALT: the alternate base (the mutated base) at this position
+* QUAL: LoFreq’s quality score for the variant
+* FILTER: whether it passed LoFreq’s filters e.g. PASS
+* INFO: Detailed Information
+	* DP=1248; depth = 1248
+	* AF=0.995192; Alt Frequency (Mutation Frequency) = 99.5%
+	* SB=0; Strand Bias test p-value
+	* DP4=0,1,604,638: Coverage of the ref base in Fwd and Rev, and the alt base in Fwd and Rev
+
+**Question 10** – how many consenus level (i.e AF > 0.5) and subconsenus (i.e. AF < 0.5) are there in the sample? what genome positions are the sub-consensus mutations?
+
+LoFreq simply calls the reference position and mutation present, it does not characterise the effect of the mutation in terms of whether the mutation is synonymous or nonsynonymous etc. To do that we will use a program called [SnpEff](https://github.com/pcingola/SnpEff) which is run on LoFreq’s outputted VCF file and creates a new annotated VCF file:
+
+```
+/software/snpEff/scripts/snpEff -ud 0 NC_045512.2 S1.vcf > S1_snpeff.vcf
+```
+**RJO - At the moment this gives a permsission error - need Scott to run it to so that it downloads the reference DB for use by everyone else - but have duplicated into ../Scripts/ in case**
+
+Breaking this command down:
+
+* **/software/snpEff/scripts/snpEff**: the name (and location) of the program we are using
+* **-ud 0**: Set upstream downstream interval length to 0
+* **NC_045512.2**: the reference file name
+* **S1.vcf**: the input vcf file name
+* **S1_snpeff.vcf**: the annotated output vcf file name
+
+Setting -ud 0 stops SnpEff from characterising mutations located near (but not within) a gene as being located in their UTRs. Typically viral genomes are compact and genes are separated by few bases, in such cases a mutation in one gene could also be characterised as being in the UTR region of a neighbouring gene (as SnpEff was initially built for human analyses) – try running SnpEff without the -ud 0 and compare the results if you want, you should see multiple annotations for each mutation.
+
+Now we can view the annotated vcf file created by SnpEff:
+
+```
+more S1_snpeff.vcf
+```
+
+The mutations will now have annotations added at the end of the Info field (the last field, the 8th field), e.g in Sample1 you should see this nonsynonymous (missense) mutation at position 23,403 which corresponds to D614G a Asp to Gly mutation at codon 614 in the Spike gene of SARS2:
+
+```
+DO NOT ENTER THIS - IT IS AN EXAMPLE OF A MUTATION IN THE VCF!!!
+DP=1286;AF=0.995334;SB=0;DP4=1,1,628,652;ANN=G|missense_variant|MODERATE|S|GU280_gp02|transcript|GU280_gp02|protein_coding|1/1|c.1841A>G|p.Asp614Gly|1841/3822|1841/3822|614/1273||
+```
+
+The A to G mutation at genome position 23403 corresponds to position 1841 (out of 3822) within the Spike (S) gene which corresponds to codon 614 (out of 1273) within Spike(S)
+
+**NB:** SnpEff includes many pre-built databases (SARS-CoV-2 NC_045512.2 being one of them) – for different viruses you may need to build the SnpEff database first by downloading and processing a GenBank file, see the documentation [here](https://pcingola.github.io/SnpEff/)
+
 
 ## 5.1: Variant calling on your own
 
-Blah blah
+Now you task is to run LoFreq and then SnpEff to characterise the mutations in Sample 2?
+
+**Question 11** - how many consensus level non-synonymous mutations are there in Sample?
 
 # 6: Extra Data
 
@@ -567,30 +650,3 @@ Tablet requires three files:
 3.	Optional: A reference sequence file: e.g. sars2\_ref.fasta
 
 **Tablet demonstration**
-
-# 8: Glossary
-
-SAM Fields
-
-SAM Flags
-
-FASTQ Scores
-
-Extract unmapped reads
-
-Remove unmapped reads
-
-Count the number of seqs in a fasta
-
-samtools idxstats
-
-samtools depth
-
-tablet demo
-
-ivar trim
-
-BED files
-
-SNPeff add
-
