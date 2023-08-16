@@ -189,7 +189,7 @@ firefox kraken_krona.html
 
 # 4: Kraken2 on your own
 
-If you have time, try processing the second sample the vampire bat and reusing and adapting the commands for the human sample - although there is no need to the human genome first
+If you have time, try processing the second sample the vampire bat and reusing and adapting the commands for the human sample - although there is no need to align the human genome first
 
 
 
