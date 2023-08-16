@@ -521,7 +521,11 @@ which you can view the sequence via the command line (we will be covering varian
 more S1.fa 
 ```
 
+***
+### Questions
+
 **Question 9** - try copying and pasting the created consensus sequence into [NCBI Blast](https://blast.ncbi.nlm.nih.gov/Blast.cgi) - what is the closest sample on GenBank?
+***
 
 ## 4.1: Consensus calling on your own
 
@@ -574,7 +578,11 @@ The outputted VCF file consists of the following fields:
 	* SB=0; Strand Bias test p-value
 	* DP4=0,1,604,638: Coverage of the ref base in Fwd and Rev, and the alt base in Fwd and Rev
 
+***
+### Questions
+
 **Question 10** – how many consenus level (i.e AF > 0.5) and subconsenus (i.e. AF < 0.5) are there in the sample? what genome positions are the sub-consensus mutations?
+***
 
 LoFreq simply calls the reference position and mutation present, it does not characterise the effect of the mutation in terms of whether the mutation is synonymous or nonsynonymous etc. To do that we will use a program called [SnpEff](https://github.com/pcingola/SnpEff) which is run on LoFreq’s outputted VCF file and creates a new annotated VCF file:
 
@@ -615,7 +623,10 @@ The A to G mutation at genome position 23403 corresponds to position 1841 (out o
 
 Now you task is to run LoFreq and then SnpEff to characterise the mutations in Sample 2?
 
+***
+### Questions
 **Question 11** - how many consensus level non-synonymous mutations are there in Sample?
+***
 
 # 6: Extra Data
 
