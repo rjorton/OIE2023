@@ -20,7 +20,7 @@ E-mail: Richard.Orton@glasgow.ac.uk
 This practical is associated with a lecture on Kmer based metagenomics
 
 * [1: Setup](#1-setup)
-* [2: Removal of host (human) reads](#2-removal-of-host-human-read)	 
+* [2: Removal of human host reads](#2-removal-of-human-host-reads)	 
 * [3: Run kraken2](#3-run-kraken2)
 * [4: Kraken2 on your own](#4-kraken2-on-your-own)
 
@@ -28,7 +28,7 @@ This practical is associated with a lecture on Kmer based metagenomics
 
 **Make sure you are logged into the alpha2 server with MobaXterm.**
 
-In this session, we will be working with Illumina metagenomic data sets that have already been published and are available for download on the [NCBI Shorted Read Archive (SRA)](https://www.ncbi.nlm.nih.gov/sra), there are two samples:
+In this session, we will be working with Illumina metagenomic data sets that have already been published and are available for download on the [NCBI Short Read Archive (SRA)](https://www.ncbi.nlm.nih.gov/sra), there are two samples:
 
 * Human
 * Vampire bat
@@ -72,7 +72,7 @@ You should see the FASTQ paired-end read files:
 **SRR533978\_1.fq**  
 **SRR533978\_2.fq**
 
-# 2: Removal of host (human) reads
+# 2: Removal of human host reads
 
 Although the kraken database does contain human data, it is good practice to remove the human reads from the sample as human data is confidential and it will also speed up later steps.
 
@@ -82,7 +82,7 @@ The human reference genome bowtie2 index has already on alpha2 (from [https://be
 
 
 ```
-bowtie2 -x /home4/ro20s/Courses/Kraken/hg19/hg19 -1 SRR533978_1.fastq -2 SRR533978_2.fastq -S human.sam -p 8
+bowtie2 -x /home4/VBG_data/hg19/hg19 -1 SRR533978_1.fastq -2 SRR533978_2.fastq -S human.sam -p 8
 ```
 
 ***Command breakdown:***
@@ -94,7 +94,7 @@ bowtie2 -x /home4/ro20s/Courses/Kraken/hg19/hg19 -1 SRR533978_1.fastq -2 SRR5339
 5. **-S human.sam** = the name of the output SAM file to create
 6. **-p 8** = use 8 computer threads
 
-When fiished bowtie2 will produce sum summary statistics to the command prompt. If we list the contents of the directory, you should now see the sam file called human.sam has been created:
+When finished bowtie2 will produce some summary statistics to the command prompt. If we list the contents of the directory, you should now see the SAM file called **human.sam** has been created:
 
 ```
 ls
@@ -115,7 +115,8 @@ samtools fastq -1 nonhuman_1.fastq -2 nonhuman_2.fastq -f 4 -s singleton.fastq h
 5. **-f 4** = only include read alignments that do have the unmapped flag 4
 6. **-s singleton.fastq** = output singleton reads (those without a pair) into the file singleton.fastq
 7. **human.sam** = the name of the input SAM file to extract reads from
-   
+
+**NB:** Just to note, SAM/BAM files need to be sorted by the read name when extracting paired end data (so that pair members are next to each in the file) - the SAM file outputted by bowtie2 has pairs next to each already so we can skip the sort step
 
 If we list the contents of the directory, you should now see the two nonhuman FASTQ files have been created:
 
@@ -180,6 +181,11 @@ We can open this file with Firefox:
 ```
 firefox kraken_krona.html
 ```
+
+***
+### Questions
+**Question 1** – What viruses have the highest read counts in the sample?
+***
 
 # 4: Kraken2 on your own
 
