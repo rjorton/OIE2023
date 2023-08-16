@@ -20,9 +20,9 @@ E-mail: Richard.Orton@glasgow.ac.uk
 This practical is associated with a lecture on Kmer based metagenomics
 
 * [1: Setup](#1-setup)
-* [2: Removal of host (human) reads](#2-removal-of-host-(human)-read)	 
+* [2: Removal of host (human) reads](#2-removal-of-host-human-read)	 
 * [3: Run kraken2](#3-run-kraken2)
- 
+* [4: Kraken2 on your own](#4-kraken2-on-your-own)
 
 # 1: Setup
 
