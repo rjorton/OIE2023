@@ -47,8 +47,7 @@ In this session, we will be working with Illumina metagenomic data sets that hav
 * Human
 * Vampire bat
 
-We will be using a tool called [Kraken2](https://ccb.jhu.edu/software/kraken2/) to analyse the paired end FASTQ reads for each sample. Kraken 2 is the newest version of Kraken, a taxonomic classification system using exact k-mer matches to achieve high accuracy and fast classification speeds. This classifier matches each k-mer within a query sequence to the lowest common ancestor (LCA) of all genomes containing the given k-mer. 
-To start off, you will need to copy the data we need for the practical to your home directory. 
+We will be using a tool called [Kraken2](https://ccb.jhu.edu/software/kraken2/) to analyse the paired end FASTQ reads for each sample. Kraken2 is the newest version of Kraken, a taxonomic classification system using exact k-mer matches to achieve high accuracy and fast classification speeds. This classifier matches each k-mer within a query sequence (i.e. a read or contig) to the lowest common ancestor (LCA) of all genomes within the database containing the given k-mer.
 
 We will be broadly following the published Kraken metagenomic protocol:
 
@@ -127,18 +126,22 @@ samtools fastq -1 nonhuman_1.fastq -2 nonhuman_2.fastq -f 4 -s singleton.fastq h
 2. **fastq** = the name of the function within samtools we are using
 3. **-1 nonhuman_1.fastq** = output the read1 of each pair in the file nonhuman_1.fastq
 4. **-2 nonhuman_2.fastq** = output the read2 of each pair in the file nonhuman_2.fastq
-5. **-f 4** = the name of read file 1
-6. **-2 SRR533978_2.fastq** = the name of read file 2
-7. **-S human.sam** = the name of the output SAM file to create
-8. **-p 8** = use 8 computer threads
+5. **-f 4** = only include read alignments that do have the unmapped flag 4
+6. **-s singleton.fastq** = output singleton reads (those without a pair) into the file singleton.fastq
+7. **human.sam** = the name of the input SAM file to extract reads from
+   
 
+If we list the contents of the directory, you should now see the two nonhuman FASTQ files have been created:
 
+```
+ls
+```
 
 # 3: Run kraken2
 
 
 ```
-/software/kraken2-v2.1.1/kraken2 --db /home4/VBG_data/k2_standard_20230605 --threads 8 --confidence 0.5 --paired nonhuman_1.fastq nonhuman_2.fastq --output kraken_output.txt --report kraken_report.txt 
+/software/kraken2-v2.1.1/kraken2 --db /home4/VBG_data/k2_standard_20230605 --threads 8 --minimum-hit-groups 3 --report-minimizer-data --paired nonhuman_1.fastq nonhuman_2.fastq --output kraken_output.txt --report kraken_report.txt 
 ```
 
 ***Command breakdown:***
@@ -146,13 +149,17 @@ samtools fastq -1 nonhuman_1.fastq -2 nonhuman_2.fastq -f 4 -s singleton.fastq h
 1. **/software/kraken2-v2.1.1/kraken2** = the name and location (path) of the program we are executing
 2. **--db /home4/VBG_data/k2_standard_20230605** = the name (and location) of the kraken2 database we are using
 3. **--threads 8** = use 8 computer threads
-4. **../Refs/sars2\_ref.fasta** = the name (and location) of the INDEXED reference genome to align to
-5. **S1\_R1.fq** = the name of read file 1
-6. **S1\_R2.fq** = the name of read file 2
-7. **>** = direct the output into a file
-8. **S1.sam** = the name of the output SAM file to create 
+4.  **--report-minimizer-data** = forces Kraken 2 to provide unique k-mer counts per classification
+5. **--minimum-hit-groups 3** = for increased classification precision (i.e., fewer false positives).
+6. **--paired nonhuman_1.fastq nonhuman_2.fastq** = the name of the paired input FASTQ files
+7. **--output kraken_output.txt** = the name of the kraken output file to create
+8. **--report kraken_report.txt** = the name of the kraken report output file to create
 
-Overall, this command will create an output file called S1.sam in the current directory, which contains the results (in SAM format) of aligning all our reads to the reference sequence sars2\_ref.fasta.
+**NB:** The --minimum-hit-groups flag specifies the minimum number of ‘hit groups’ needed to make a classification call. Hit groups are overlapping k-mers sharing the same minimizer. Kraken 2 uses minimizers to compress the input genomic sequences, thereby reducing storage memory needed and run time. In this example, we increase the minimum number of hit groups from the default two groups to three groups for increased accuracy.
+
+Overall, this command will output two files - our kraekn_output.txt file and our kraken_report.txt file
+
+
 
 When bwa has finished (and your prompt comes back), check that the SAM file has been created.
 
