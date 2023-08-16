@@ -199,11 +199,46 @@ firefox kraken_krona.html
 **Question 1** – What viruses have the highest read counts in the sample?
 ***
 
+**NB:** Alternatively, the html file can be downloaded via the MobaXterm file browser on the left hand side of the window onto your local machine and opened there
+
+### What is a krona plot?
+
+Krona is an interactive visualization tool for exploring the composition of metagenomes within a Web browser. A Krona plot is a html file that can be opened by a web browser (such as Firefox, Chrome, Safari and Internet Explorer/Edge). Krona uses multilevel pie charts to visualize both the most abundant organisms and their most specific classifications (Fig. 1). Rather than hiding lower ranks in its overview, Krona hides low-abundance organisms, which can be expanded interactively. 
+
+**Krona: Interactive Metagenomic Visualization in a Web Browser**  
+Ondov et al. (2013)  
+DOI 10.1007/978-1-4614-6418-1_802-1  
+[https://link.springer.com/content/pdf/10.1007/978-1-4614-6418-1_802-1.pdf](https://link.springer.com/content/pdf/10.1007/978-1-4614-6418-1_802-1.pdf)
+
+An example Krona plot is shown below:
+
+![](https://github.com/rjorton/OIE2023/blob/main/krona.png)
+
+Some of the key features of a Krona plot:
+
+1. You can double click on any taxon (i.e. any slice of the pie) to view only that taxon and it's children
+2. Clicking/Selecting a taxon will display how many sequences (i.e. reads or contigs) have been assigned to that taxon in the top right corner under "count" (this is actually a hyperlink to a file containing all the sequence IDs assigned to this taxon). The taxonomy ID is also displayed as a hyperlink to the corresponding NCBI page.
+3. The defauly colouring of the krona plot is set to distinguish taxons apart - however the colouring can be changed based on the 'score' (for BLAST results this corresponds to e-value) by selecting the "Color by Avg. log e-value" - this would highlight the taxons with the highest score
+
+
+## 3.1: Bos congo virus
+
+The Human sample came from the following paper where deep sequencing was used to discover a novel rhabdovirus (Bas-Congo virus, or BASV) associated with a 2009 outbreak of 3 human cases of acute hemorrhagic fever in Mangala village, Democratic Republic of Congo (DRC), Africa.
+
+**A Novel Rhabdovirus Associated with Acute Hemorrhagic Fever in Central Africa**  
+Grard et al. 2012  
+PLoS Pathog. 2012 Sep; 8(9): e1002924.  
+[https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3460624/](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3460624/)
+
+The viral species is now called 'Tibrovirus congo': [https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=1987017](https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=1987017)
+
 # 4: Kraken2 on your own
 
-If you have time, try processing the second sample the vampire bat and reusing and adapting the commands for the human sample - although there is no need to align the human genome first
+If you have time, try processing the second sample the vampire bat and reusing and adapting the commands for the human sample - although there is no need to align the human genome first.
 
+The sample is one sample from the following paper:
 
-
-
-
+**Using noninvasive metagenomics to characterize viral communities from wildlife**  
+Molecular Ecology Resources Volume19, Issue 1, January 2019, Pages 128-143  
+Bergner et al. 2018  
+[https://onlinelibrary.wiley.com/doi/full/10.1111/1755-0998.12946](https://onlinelibrary.wiley.com/doi/full/10.1111/1755-0998.12946)
