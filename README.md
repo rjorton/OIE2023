@@ -42,16 +42,16 @@ This practical is associated with a lecture on Reference Alignment of High-Throu
 
 **YOU DO NOT NEED TO ENTER THE COMMANDS IN THIS OVERVIEW SECTION!**
 
-In this practical, we will be aligning paired end reads to a reference sequence. Commands that you need to enter into the Terminal window (i.e. the command line) are presented in a box and with a different font, like this:
+In this practical, we will be aligning paired end reads to a reference sequence. Commands that you need to enter into the Terminal window (i.e. the command line) are presented in a 'code' box with a different font, like this:
 
 ```
 ls
 ```
 
-Sometimes a command is long and doesn’t fit on a single line on the screen (and screen sizes vary), but it should still be entered as one single line on the computer terminal. 
+Sometimes a command can be long and may not be fully visible (but the code box is within a scrollpane to aid viewing), but the command should still be entered as one single command on the computer terminal. 
 
 ```
-bwa mem -t 4 my_reference_file.fasta my_read_file_1.fastq my_read_file_2.fastq > my_output_file.sam
+bwa mem -t 4 my_really_long_reference_filename.fasta my_really_log_read_file_1.fastq my_really_long_read_file_2.fastq > my_really_long_output_file.sam
 ```
 
 A few Linux tips to remember:
@@ -82,7 +82,7 @@ O = capital letter O
 
 **Make sure you are logged into the alpha2 server with MobaXterm.**
 
-In this session, we will be working with two sets of Illumina paired end reads which were simulated from a SARS-CoV-2 genome; these simulated reads were created using ART (Huang et al., 2012: [10.1093/bioinformatics/btr708](10.1093/bioinformatics/btr708)). The goal now is to align these reads to a reference genome sequence, with an ultimate goal of creating a consensus sequence for mutation anlysis.
+In this session, we will be working with two sets of Illumina paired end reads which were simulated from the viral genomes of two different SARS-CoV-2 samples; these simulated reads were created using ART (Huang et al., 2012: [10.1093/bioinformatics/btr708](10.1093/bioinformatics/btr708)). The goal now is to align these reads to a reference genome sequence, with an ultimate goal of creating a consensus sequence for mutation anlysis.
 
 To start off, you will need to copy the data we need for the practical to your home directory. First change directory (cd) to your home directory:
 
@@ -96,7 +96,7 @@ Then copy (cp) the data folder (-r for recursive as we want the folder and all i
 cp -r /home4/VBG_data/Richard .
 ```
 
-Then change directory to the Sample1 data folder
+Then change directory to the Sample1 data folder (within the Richard folder):
 
 ```
 cd ~/Richard/Sample1/
@@ -113,19 +113,19 @@ You should see the FASTQ paired-end read files:
 **S1\_R1.fq**  
 **S1\_R2.fq**
 
-The reference file that we will be using is located in the Refs folder (~/Richard/Refs):
+The reference file that we will be using is located in the Refs folder ~/Richard/Refs (whose relative path is ../Refs/):
 
 ```
 ls ../Refs
 ```
 
-You should see:
+You should see a file called:
 
 **sars2_ref.fasta**  
 
 ## 1.1: Basic read statistics
 
-We will first use a tool called prinseq to count the number of reads in each file. As these are paired end reads, there should be one read from each read pair in each file – and hence the same number of reads in each file. We will also use prinseq to output statistics on the read lengths, but prinseq itself can do much much more.
+We will first use a tool called [prinseq](https://prinseq.sourceforge.net) to count the number of reads in each file. As these are paired end reads, there should be one read from each read pair in each file – and hence the same number of reads in each file. We will also use prinseq to output statistics on the read length (just to point out - prinseq itself can do much much more!):
 
 ```
 prinseq-lite.pl -stats_info -stats_len -fastq S1_R1.fq -fastq2 S1_R2.fq
@@ -137,11 +137,11 @@ prinseq-lite.pl -stats_info -stats_len -fastq S1_R1.fq -fastq2 S1_R2.fq
 2.	**-stats\_info** tells prinseq to output basic stats on the reads (number of reads and bases)
 3.	**-stats\_len** tells prinseq to output basic stats on read lengths (min, max, mean etc)
 4.	**-fastq S1\_R1.fq** the name of the 1st FASTQ file
-5.	**-fastq2 S2\_R2.fq** the name of the 2nd FASTQ file in the pair
+5.	**-fastq2 S1\_R2.fq** the name of the 2nd FASTQ file in the pair
 
 ### Common Issue
 * A common issue here is not entering the prinseq command on one line in the terminal - you should only use the enter key at the end of the command to execute it.
-* Another common issue is typos - check the command carefully if you get an error - it is likely you have mispelled a file or argument
+* Another common issue is typos - check the command carefully if you get an error - it is likely you have mispelled a file or argument (or even the prinseq program name)
 
 ***
 ### Questions
@@ -150,7 +150,7 @@ prinseq-lite.pl -stats_info -stats_len -fastq S1_R1.fq -fastq2 S1_R2.fq
 **Question 2** – What is the average (mean) length of the reads? 
 ***
 
-The statistics are split into those for the first FASTQ file of the read pair (e.g. stats\_info, stats\_len, etc) and those for the second FASTQ file of the read pair (e.g. stats\_info2, stats\_len2, etc), and should look a bit like this (but with different numbers!):
+The prinseq statistics are split into those for the first FASTQ file of the read pair (e.g. stats\_info, stats\_len, etc) and those for the second FASTQ file of the read pair (e.g. stats\_info2, stats\_len2, etc), and should look a bit like this (but with different numbers!):
 
 ```
 stats_info	bases		48000000
@@ -183,7 +183,7 @@ The reads have already been quality filtered and trimmed so we can move on to al
  
 # 2: Read Alignment
 
-There are many tools available to align reads onto a reference sequence: bwa, bowtie2, minimap2, bbMap, to name but a few.
+There are many tools available to align reads onto a reference sequence: [BWA](http://bio-bwa.sourceforge.net), [bowtie2](https://bowtie-bio.sourceforge.net/bowtie2/index.shtml), [minimap2](https://github.com/lh3/minimap2), [bbMap](https://jgi.doe.gov/data-and-tools/software-tools/bbtools/bb-tools-user-guide/bbmap-guide/), to name but a few.
 
 We will be using [BWA](http://bio-bwa.sourceforge.net) to align our paired end reads to a reference sequence and output a [SAM (Sequence Alignment Map)](https://samtools.github.io/hts-specs/SAMv1.pdf) file. The SAM file contains the result of each read’s alignment to the given reference sequence. 
 
@@ -195,7 +195,7 @@ First, we need to create a BWA index of the reference sequence. Tools such as BW
 bwa index ../Refs/sars2_ref.fasta
 ```
 
-If you list (ls) the contents of the Refs directory, you should see the BWA index files, they will all have the prefix sars2\_ref.fasta, and will have extensions such as **.amb**, **.ann**, **.bwt**, **.pac**, and **.sa**.
+If you list (ls) the contents of the ../Refs directory, you should see the BWA index files, they will all have the prefix sars2\_ref.fasta, and will have extensions such as **.amb**, **.ann**, **.bwt**, **.pac**, and **.sa**.
 
 ```
 ls ../Refs/
@@ -214,7 +214,7 @@ bwa mem -t 4 ../Refs/sars2_ref.fasta S1_R1.fq S1_R2.fq > S1.sam
 1. **bwa** = the name of the program we are executing
 2. **mem** = the BWA algorithm to use (recommended for illumina reads > 70nt)
 3. **-t 4** = use 4 computer threads
-4. **../Refs/sars2\_ref.fasta** = the name (and location) of the reference genome to align to
+4. **../Refs/sars2\_ref.fasta** = the name (and location) of the INDEXED reference genome to align to
 5. **S1\_R1.fq** = the name of read file 1
 6. **S1\_R2.fq** = the name of read file 2
 7. **>** = direct the output into a file
@@ -237,7 +237,7 @@ A common mistake is not waiting for your previous command to finish, and enterin
 
 Typically, a SAM file contains a single line for each read in the data set, and this line stores the alignment result of each read (reference name, alignment location, CIGAR string, the read sequence itself, quality, etc).
 
-SAM files are in a text format (which you can open and view if you like: head S1.sam), but can take up a lot of disk storage space. It is good practice to convert your SAM files to BAM (Binary Alignment Map) files, which are compressed binary versions of the same data, and can be sorted and indexed easily to make searches faster. We will use [samtools](https://samtools.github.io) to convert our SAM to BAM, and sort and index the BAM file:
+SAM files are in a text format (which you can open and view if you like, e.g.: **head S1.sam**), but can take up a lot of disk storage space. It is good practice to convert your SAM files to BAM (Binary Alignment Map) files, which are compressed binary versions of the same data, and can be sorted and indexed easily to make searches faster. We will use [samtools](https://samtools.github.io) to convert our SAM to BAM, and sort and index the BAM file:
 
 ```
 samtools sort S1.sam -o S1.bam
@@ -249,7 +249,7 @@ samtools index S1.bam
 
 ***Command breakdown:***
 
-1.	The first command tells samtools to **sort** the SAM file, and to also output (**-o**)the sorted data in BAM format to a file called **S1.bam**
+1.	The first command tells samtools to **sort** the SAM file, and to also output (**-o**)the sorted data in BAM format to a file called **S1.bam**. This sorts all the alignmed reads by alignment start position, placing all the reads whose alignment starts at reference position 1 first, then those that start of position 2, then 3, 4, 5 and so on.
 3.	We then use samtools to **index** the BAM file S1.bam (indexing [which relies on sorted data] enables faster searches downstream).
 
 
@@ -342,9 +342,9 @@ We previously used samtools to count the number of mapped and unmapped reads (us
 
 weeSAM analyses a SAM or BAM file, generates a graphical coverage plot, and reports a range of summary statistics such as:
 
-* **Ref_Name**: The identifier of the reference.
+* **Ref_Name**: The identifier name of the reference.
 * **Ref_Len**: The length in bases of each reference.
-* **Mapped\_Reads**: Number of reads mapped to each reference.
+* **Mapped\_Reads**: Number of read alignments mapped to each reference.
 * **Breadth**: The number of sites in the genome covered by reads.
 * **%\_Covered**: The percent of sites in the genome which have coverage.
 * **Min\_Depth**: Minimum read depth observed.
@@ -384,13 +384,11 @@ Inside this folder is a HTML file that we can view in a web browser (like Firefo
 firefox S1_html_results/S1.html
 ```
 
-***RJO CHECK IN COMPUTER ROOM - will this launch via MobaXterm or should they download locally?***
+***RJO CHECK IN COMPUTER ROOM - will this definitiely launch firefox via MobaXterm or should they download locally?***
 
 You should see something like this:
 
 ![](https://github.com/rjorton/OIE2023/blob/main/weeSAM_table.png)
-
-***RJO UPDATE FIGURE***
 
 ***
 ### Questions
@@ -403,7 +401,7 @@ Now let’s view the coverage plot by clicking on the hyperlink (blue and underl
 
 The x-axis represents the genome position, whilst the y-axis represents the Depth of Coverage at each genome position. 
 
-**NB:** The reference sequence filename is sars2_ref.fasta, but the actual name of the sequence itself is MN908947 in the fasta file, you can open up the file yourself to check this if you want (head –n1 sars2_ref.fasta).
+**NB:** The reference sequence filename is sars2_ref.fasta, but the actual name of the sequence itself is [NC_045512.2](https://www.ncbi.nlm.nih.gov/nuccore/NC_045512.2) in the fasta file, you can open up the file yourself to check this if you want (head –n1 sars2_ref.fasta).
 
 **Close the weeSAM/Firefox windows before proceeding!**
 
@@ -459,7 +457,7 @@ weeSAM --bam S1.bam --html S1
 
 # 4: Consensus calling
 
-We have now aigned each of our samples (S1 and S2) to the Wuhan-Hu-1 (MN908947) SARS-CoV-2 reference genome reference sequence, and now we want to call a consensus sequence.
+We have now aigned each of our samples (S1 and S2) to the Wuhan-Hu-1 (NC_045512.2) SARS-CoV-2 reference genome reference sequence, and now we want to call a consensus sequence.
 
 What is a consensus sequence? At each genome position in the SAM/BAM alignment file, call the most frequent nucleotide observed in all of the reads aligned at the position. This includes insertions and deletion (indels).
 
