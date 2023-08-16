@@ -475,7 +475,7 @@ First, let work on Sample1, so we need to change directory (cd) into the correct
 cd ~/Richard/Sample1
 ```
 
-And now call the consenus for the sample using ivar:
+And now call the consenus for the sample using iVar:
 
 ```
 samtools mpileup -aa -A -d 0 -Q 0 S1.bam | ivar consensus -p S1 -t 0.4
@@ -490,17 +490,23 @@ Breaking this command down, there are two parts:
 	* **-Q 0** = minimum base quality, 0 essentially means all the data
 2. ivar [consensus](https://andersen-lab.github.io/ivar/html/manualpage.html) - this calls the consensus - the output of the samtools mpileup command is piped '|' directly into ivar
 	* -p S1 = prefix with which to name the output file
-	* -t 0.4 = the minimum frequency threshold that a base must match to be used in calling the consensus base at a position. In this case, an ambiguity code will be used if more than one base is > 40% (0.4). See [ivar manual]
+	* -t 0.4 = the minimum frequency threshold that a base must match to be used in calling the consensus base at a position. In this case, an ambiguity code will be used if more than one base is > 40% (0.4). See [iVar manual](https://andersen-lab.github.io/ivar/html/manualpage.html)
 
-By default, ivar consensus uses a minimum depth (-m) of 10 and a minimum base quality (-q) of 20 to call the consensus; these defaults can be changed by using the appropriate arguments. If a genome position has a depth less than the minimum, an 'N' base will be used in the consensus sequence by default.
+By default, iVar consensus uses a minimum depth (-m) of 10 and a minimum base quality (-q) of 20 to call the consensus; these defaults can be changed by using the appropriate arguments. If a genome position has a depth less than the minimum, an 'N' base will be used in the consensus sequence by default.
 
-ivar will output some basic statistics to the screen such as:
+iVar will output some basic statistics to the screen such as:
 
 ```
 #DO NOT ENTER THIS - IT IS AN EXAMPLE OF AN IVAR OUTPUT:
+Minimum Quality: 20
+Threshold: 0.4
+Minimum depth: 10
+Regions with depth less than minimum depth covered by: N
+[mpileup] 1 samples in 1 input files
+[mpileup] Max depth set to maximum value (2147483647)
 Reference length: 29903
-Positions with 0 depth: 121
-Positions with depth below 10: 121
+Positions with 0 depth: 0
+Positions with depth below 10: 4
 ```
 
 and when it has finished (and your prompt returns) you should see our consensus sequence (S1.fa) in the directory:
@@ -542,9 +548,9 @@ The reference ebola sequence is from a 2007 outbreak in Democratic Republic of C
 
 Try aligning the reads to the reference yourself.
 
-### ~/Richard/Noisey/
+### ~/Richard/Dengue
 
-This is a real HCV sample, but the read quality is quite poor making it quite noisey. Two HCV ref sequences are supplied (HCV_1a and HCV_1B). Align the paired end reads to each reference and determine what subtype the sample is by comparing mapping and coverage statistics.
+This is a simulated Dengue virus sample, but we do not know what genotype it is and therefore what reference alignment to use. Align the paired end FASTQ reads to the two provided reference sequences (genotype1 and genotype3), count the number of mapped reads and create a coverage plot to determine which genotype is the best reference.
 
 ### ~/Richard/Mystery/
 
