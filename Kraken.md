@@ -124,6 +124,18 @@ If we list the contents of the directory, you should now see the two nonhuman FA
 ls
 ```
 
+Lets check that they actually contain some data by counting the number of lines in them:
+
+```
+wc -l nonhuman*
+```
+
+If you see millions of lines in each file we can safely delete our human.sam file as we no longer need it:
+
+```
+rm human.sam
+```
+
 # 3: Run kraken2
 
 
