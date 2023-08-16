@@ -555,17 +555,17 @@ Breaking this command down:
 * **call**: the name of the function within LoFreq we are using – call variants
 * **-f**: ../Refs/sars2_ref.fasta: the reference file name and location (path)
 * **-o S1.vcf**: the output VCF file name to create
-* **sars2**.bam: the input BAM file name
+* **S1**.bam: the input BAM file name
 
 Now lets open the VCF file created by LoFreq:
 
 ```
-more sars2.vcf
+more S1.vcf
 ```
 
 The outputted VCF file consists of the following fields:
 
-* CHROM: the chromosome – in this case the SARS2 ref sequence NC_045512.2
+* CHROM: the chromosome – in this case the SARS-CoV-2 ref sequence NC_045512.2
 * POS: the position on the chromosome the variant is at
 * ID: a ‘.’ but LoFreq can be run with a database of known variants to annotate this field
 * REF: the reference base at this position
