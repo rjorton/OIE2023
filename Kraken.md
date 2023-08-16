@@ -221,7 +221,7 @@ Some of the key features of a Krona plot:
 3. The defauly colouring of the krona plot is set to distinguish taxons apart - however the colouring can be changed based on the 'score' (for BLAST results this corresponds to e-value) by selecting the "Color by Avg. log e-value" - this would highlight the taxons with the highest score
 
 
-## 3.1: Bos congo virus
+## 3.1: Bas congo virus / Tibrovirus congo
 
 The Human sample came from the following paper where deep sequencing was used to discover a novel rhabdovirus (Bas-Congo virus, or BASV) associated with a 2009 outbreak of 3 human cases of acute hemorrhagic fever in Mangala village, Democratic Republic of Congo (DRC), Africa.
 
