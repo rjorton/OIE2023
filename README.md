@@ -411,15 +411,13 @@ A common issue here is due to the fact that we have launched firefox from the te
 
 # 3: Alignment on your own
 
-You now need to use bwa to align the reads for the Sim2 samples to the sars2_ref.fasta reference sequence. So lets move into the correct folder:
+You now need to use BWA to align the reads for Sample2 (S2_R1.fq and S2_R2.fq) to the sars2_ref.fasta reference sequence. So lets move into the correct folder:
 
 ```
 cd ../Sample2
 ```
 
-You need to work out the commands yourself based on the previous commands for the Sim1 sample. Here is a reminder of the commands you used for Sim1 (S1) which you will need to adapt. 
-
-**NB:** Essentially, you will want change the names of your input FASTQ filenames and the output files (e.g. from S1 to S2) in each command
+**You need to work out the commands yourself based on the previous commands for the Sample1**. Here is a reminder of the commands you used for Sample1 (S1) which you will need to adapt:
 
 ```
 prinseq-lite.pl -stats_info -stats_len -fastq S1_R1.fq -fastq2 S1_R2.fq
@@ -447,29 +445,31 @@ samtools view -c -F2308 S1.bam
 weeSAM --bam S1.bam --html S1
 ```
 
+**NB:** This is a new sample, but the steps are exactly the same. Essentially, you will want change the names of your input FASTQ filenames and the output files (e.g. from S1 to S2) in each command.
+
 ***
 ### Questions
 
-**Question 7** – how many reads are in the original FASTQ files and how manu reads are mapped to the sars2_ref.fasta genome for sample Sim2?
+**Question 7** – how many reads are in the original FASTQ files and how many reads are mapped to the sars2_ref.fasta genome for Sample2?
 
-**Question 8** – how many reads are unmapped?
+**Question 8** – how many reads are unmapped? what is the average coverage and breadth of coverage?
 ***
 
 # 4: Consensus calling
 
-We have now aigned each of our samples (S1 and S2) to the Wuhan-Hu-1 (NC_045512.2) SARS-CoV-2 reference genome reference sequence, and now we want to call a consensus sequence.
+We have now aigned each of our samples (S1 and S2) to the Wuhan-Hu-1 (NC_045512.2) SARS-CoV-2 reference genom sequence, and now we want to call a consensus sequence.
 
-What is a consensus sequence? At each genome position in the SAM/BAM alignment file, call the most frequent nucleotide observed in all of the reads aligned at the position. This includes insertions and deletion (indels).
+What is a consensus sequence? At each genome position in the SAM/BAM alignment file, call the most frequent nucleotide (or insertion/deletion) observed in all of the reads aligned at the position. 
 
 In this practical, we will use a tool called [iVar](https://andersen-lab.github.io/ivar/html/manualpage.html) to call the consensus sequence, which utilises the [mpileup](http://www.htslib.org/doc/samtools-mpileup.html) function of samtools.
 
-**NB:** the server we are using (alpha2) has a conflict/error when running ivar by default, to resolve it please COPY and PASTE the below command into your terminal window and hit the enter button:
+**NB:** the server we are using (alpha2) has a conflict/error when running ivar by default, to resolve it please **COPY** and **PASTE** the below command into your terminal window and hit the enter button:
 
 ```
 LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/software/htslib-v1.12/lib
 ```
 
-First, let work on sample Sample1, so we need to change directory (cd) into the correct folder:
+First, let work on Sample1, so we need to change directory (cd) into the correct folder:
 
 ```
 cd ~/Richard/Sample1
@@ -518,7 +518,7 @@ more S1.fa
 
 ## 4.1: Consensus calling on your own
 
-Blah blah
+You now need to call the consensus sequence for Sample2, so you'll need to change directory to the appropriate folder and adapt the ivar command for the Sample2 files.
 
 # 5: Variant calling
 
